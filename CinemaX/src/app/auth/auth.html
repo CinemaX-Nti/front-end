@@ -1,0 +1,137 @@
+<div class="auth-container">
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        <div class="auth-card">
+          <div class="auth-header">
+            <h1 class="auth-title">CinemaX</h1>
+            <p class="auth-subtitle">{{ isLoginView ? 'Sign in to continue' : 'Create your account' }}</p>
+          </div>
+
+          <!-- Login Form -->
+          <form *ngIf="isLoginView" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+            <div class="form-group mb-3">
+              <label for="login-email" class="form-label">Email</label>
+              <input type="email" id="login-email" class="form-control" formControlName="email"
+                placeholder="Enter your email"
+                [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+              <div class="invalid-feedback" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+                Please enter a valid email.
+              </div>
+            </div>
+
+            <div class="form-group mb-4">
+              <label for="login-password" class="form-label">Password</label>
+
+              <div class="password-wrapper position-relative">
+                <input [type]="showPassword ? 'text' : 'password'" id="login-password" class="form-control pe-5"
+                  formControlName="password" placeholder="Enter your password"
+                  [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+
+
+                <span class="password-toggle" (click)="togglePassword()">
+                  <i [class]="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                </span>
+              </div>
+
+              <div class="invalid-feedback d-block "
+                *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+                Password must be at least 6 characters.
+              </div>
+            </div>
+            <div class="d-flex justify-content-end mb-3">
+              <a class="forgot-password-link" (click)="onForgotPassword($event)">
+                Forgot Password?
+              </a>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-auth">Sign In</button>
+
+            <div class="auth-switch">
+              <p>Don't have an account? <a (click)="toggleView()" class="auth-link">Create Account</a></p>
+            </div>
+          </form>
+
+          <!-- Register Form -->
+          <form *ngIf="!isLoginView" [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="register-firstName" class="form-label">First Name</label>
+                  <input type="text" id="register-firstName" class="form-control" formControlName="firstName"
+                    placeholder="First name"
+                    [class.is-invalid]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched">
+                  <div class="invalid-feedback"
+                    *ngIf="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched">
+                    First name is required.
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="register-lastName" class="form-label">Last Name</label>
+                  <input type="text" id="register-lastName" class="form-control" formControlName="lastName"
+                    placeholder="Last name"
+                    [class.is-invalid]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched">
+                  <div class="invalid-feedback"
+                    *ngIf="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched">
+                    Last name is required.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="register-email" class="form-label">Email</label>
+              <input type="email" id="register-email" class="form-control" formControlName="email"
+                placeholder="Enter your email"
+                [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+              <div class="invalid-feedback"
+                *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+                Please enter a valid email.
+              </div>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="register-phone" class="form-label">Phone</label>
+              <input type="tel" id="register-phone" class="form-control" formControlName="phone"
+                placeholder="Enter your phone number"
+                [class.is-invalid]="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">
+              <div class="invalid-feedback"
+                *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">
+                Phone number is required.
+              </div>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="register-dob" class="form-label">Date of Birth</label>
+              <input type="date" id="register-dob" class="form-control" formControlName="dob"
+                [class.is-invalid]="registerForm.get('dob')?.invalid && registerForm.get('dob')?.touched">
+              <div class="invalid-feedback"
+                *ngIf="registerForm.get('dob')?.invalid && registerForm.get('dob')?.touched">
+                Date of birth is required.
+              </div>
+            </div>
+
+            <div class="form-group mb-4">
+              <label for="register-password" class="form-label">Password</label>
+              <input type="password" id="register-password" class="form-control" formControlName="password"
+                placeholder="Create a password"
+                [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+              <div class="invalid-feedback"
+                *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+                Password must be at least 6 characters.
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-auth">Create Account</button>
+
+            <div class="auth-switch">
+              <p>Already have an account? <a (click)="toggleView()" class="auth-link">Sign In</a></p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
