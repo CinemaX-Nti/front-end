@@ -12,9 +12,8 @@
     <!-- Navbar content -->
     <div class="collapse navbar-collapse" id="navbarNav">
       <!-- Middle section - Common items -->
-      <div class="navbar-middle" *ngIf="isAuthenticated">
-        <a class="nav-link" routerLink="/user/movies" routerLinkActive="active">Movies</a>
-        <a class="nav-link" routerLink="/user/movies/:id/showtimes" routerLinkActive="active">Showtimes</a>
+      <div class="navbar-middle" *ngIf="isUser && isAuthenticated">
+        <a class="nav-link" routerLink="/movies" routerLinkActive="active">Movies</a>
       </div>
 
       <!-- Role-based items - Admin -->

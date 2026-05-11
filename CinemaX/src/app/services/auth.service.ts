@@ -147,6 +147,24 @@ export class AuthService {
   }
 
   /**
+   * Mock login for development
+   */
+  mockLogin(role: string): void {
+    const mockUser: User = {
+      _id: 'mock-123',
+      name: 'Mock User',
+      email: 'mock@example.com',
+      role: role,
+      provider: 'local'
+    };
+    
+    localStorage.setItem('token', 'mock-token');
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    
+    this.currentUserSubject.next(mockUser);
+  }
+
+  /**
    * Get current user value
    */
   get currentUserValue(): User | null {

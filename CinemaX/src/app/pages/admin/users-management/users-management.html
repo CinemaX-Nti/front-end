@@ -1,1 +1,83 @@
-<h1>Admin Users Management Page</h1>
+<div class="admin-dashboard-container">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-titles">
+      <h1 class="page-title">Users Management</h1>
+      <p class="page-subtitle">View and manage registered users</p>
+    </div>
+    <div class="header-actions">
+      <div class="search-container">
+        <i class="search-icon">🔍</i>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search users by name, email or phone..." 
+          [(ngModel)]="searchQuery"
+          (input)="filterUsers()"
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="table-card">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Provider</th>
+          <th>Status</th>
+          <th>Joined Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers">
+          <td>
+            <div class="user-info">
+              <div class="avatar">{{ user.name.charAt(0) }}</div>
+              <span class="user-name">{{ user.name }}</span>
+            </div>
+          </td>
+          <td class="text-secondary">{{ user.email }}</td>
+          <td class="text-secondary">{{ user.phone }}</td>
+          <td>
+            <span class="status-pill" [ngClass]="user.role === 'ADMIN' ? 'pill-danger' : 'pill-info'">
+              {{ user.role }}
+            </span>
+          </td>
+          <td>
+            <span class="status-pill pill-secondary">
+              {{ user.provider }}
+            </span>
+          </td>
+          <td>
+            <span class="status-pill" [ngClass]="user.emailStatus === 'VERIFIED' ? 'pill-success' : 'pill-warning'">
+              {{ user.emailStatus }}
+            </span>
+          </td>
+          <td class="text-secondary">{{ user.joinedDate }}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action" title="Toggle Role" (click)="toggleRole(user)">
+                ⚙️
+              </button>
+              <button class="btn-action btn-delete" title="Delete User" (click)="deleteUser(user)">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+        
+        <tr *ngIf="filteredUsers.length === 0">
+          <td colspan="8" class="empty-state">
+            No users found matching your search criteria.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

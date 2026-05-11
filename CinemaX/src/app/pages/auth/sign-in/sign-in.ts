@@ -32,8 +32,8 @@ export class SignInPage {
     // Mock authentication - determine role based on email domain
     setTimeout(() => {
       const role = this.email.includes('admin') ? 'admin' : 'user';
-      this.authService.login(role);
-      this.router.navigate([`/${role}`]);
+      this.authService.mockLogin(role);
+      this.router.navigate([role === 'admin' ? '/admin' : '/movies']);
     }, 1000);
   }
 }

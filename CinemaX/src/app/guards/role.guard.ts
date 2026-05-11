@@ -1,17 +1,17 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, UrlTree } from '@angular/router';
-import { AuthService, UserRole } from '../services/auth.service';
+import { AuthService } from '../services/auth.service';
 
-export function roleGuard(expectedRole: UserRole): CanActivateFn {
+export function roleGuard(expectedRole: string): CanActivateFn {
   return (): boolean | UrlTree => {
     const authService = inject(AuthService);
     const router = inject(Router);
-    const currentRole = authService.role();
+    const currentRole = authService.currentUserValue?.role;
 
     if (currentRole === expectedRole) {
       return true;
     }
 
-    return router.createUrlTree([currentRole === 'admin' ? '/admin' : '/user']);
+    return router.createUrlTree([currentRole === 'admin' ? '/admin' : '/movies']);
   };
 }

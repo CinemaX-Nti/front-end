@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, UserRole } from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -19,11 +19,11 @@ export class Navbar {
   }
 
   protected get isAdmin(): boolean {
-    return this.authService.isAdmin();
+    return this.authService.currentUserValue?.role === 'admin';
   }
 
   protected get isUser(): boolean {
-    return this.authService.isUser();
+    return this.authService.currentUserValue?.role === 'user';
   }
 
   protected logout(): void {
