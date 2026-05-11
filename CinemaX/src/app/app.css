@@ -1,0 +1,289 @@
+/* =========================================
+   ROOT VARIABLES
+========================================= */
+
+:root {
+  --font-size: 16px;
+
+  --background: #ffffff;
+  --foreground: #171717;
+
+  --card: #ffffff;
+  --card-foreground: #171717;
+
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+
+  --primary: #030213;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f1f3f5;
+  --secondary-foreground: #030213;
+
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+
+  --border: rgba(0, 0, 0, 0.1);
+
+  --input: transparent;
+  --input-background: #f3f3f5;
+
+  --switch-background: #cbced4;
+
+  --ring: #b3b3b3;
+
+  --radius: 10px;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+
+  /* Charts */
+  --chart-1: #ff7849;
+  --chart-2: #35b6b2;
+  --chart-3: #355c7d;
+  --chart-4: #ffd166;
+  --chart-5: #ff9f43;
+
+  /* Sidebar */
+  --sidebar: #fafafa;
+  --sidebar-foreground: #171717;
+
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: #ffffff;
+
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #2a2a2a;
+
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #b3b3b3;
+}
+
+/* =========================================
+   DARK MODE
+========================================= */
+
+.dark {
+  --background: #171717;
+  --foreground: #fafafa;
+
+  --card: #171717;
+  --card-foreground: #fafafa;
+
+  --popover: #171717;
+  --popover-foreground: #fafafa;
+
+  --primary: #fafafa;
+  --primary-foreground: #2a2a2a;
+
+  --secondary: #444444;
+  --secondary-foreground: #fafafa;
+
+  --muted: #444444;
+  --muted-foreground: #b3b3b3;
+
+  --accent: #444444;
+  --accent-foreground: #fafafa;
+
+  --destructive: #7a1d1d;
+  --destructive-foreground: #ffb4b4;
+
+  --border: #444444;
+
+  --input: #444444;
+
+  --ring: #6f6f6f;
+
+  /* Charts */
+  --chart-1: #6366f1;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #d946ef;
+  --chart-5: #ef4444;
+
+  /* Sidebar */
+  --sidebar: #2a2a2a;
+  --sidebar-foreground: #fafafa;
+
+  --sidebar-primary: #6366f1;
+  --sidebar-primary-foreground: #fafafa;
+
+  --sidebar-accent: #444444;
+  --sidebar-accent-foreground: #fafafa;
+
+  --sidebar-border: #444444;
+  --sidebar-ring: #6f6f6f;
+}
+
+/* =========================================
+   GLOBAL RESET
+========================================= */
+
+* {
+  box-sizing: border-box;
+  border-color: var(--border);
+  outline-color: rgba(0, 0, 0, 0.5);
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+
+  margin: 0;
+  padding: 0;
+
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================================
+   TYPOGRAPHY
+========================================= */
+
+h1 {
+  font-size: 2rem;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+h4 {
+  font-size: 1rem;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+label,
+button {
+  font-size: 1rem;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+input {
+  font-size: 1rem;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+
+  background-color: var(--input-background);
+  border: 1px solid var(--border);
+
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+}
+
+/* =========================================
+   CUSTOM COMPONENT CLASSES
+========================================= */
+
+.card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+
+  padding: 1rem;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+
+  border: none;
+  border-radius: var(--radius);
+
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+
+  border: none;
+  border-radius: var(--radius);
+
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+}
+
+.sidebar {
+  background-color: var(--sidebar);
+  color: var(--sidebar-foreground);
+
+  border-right: 1px solid var(--sidebar-border);
+}
+
+/* =========================================
+   BOOTSTRAP VARIABLE OVERRIDES
+========================================= */
+
+:root {
+  --bs-body-bg: var(--background);
+  --bs-body-color: var(--foreground);
+
+  --bs-primary: var(--primary);
+  --bs-secondary: var(--secondary);
+
+  --bs-border-color: var(--border);
+
+  --bs-card-bg: var(--card);
+  --bs-card-color: var(--card-foreground);
+
+  --bs-border-radius: var(--radius);
+
+  --bs-font-size-base: 1rem;
+}
+
+/* =========================================
+   BOOTSTRAP COMPONENT CUSTOMIZATION
+========================================= */
+
+.btn-primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.btn-secondary {
+  background-color: var(--secondary) !important;
+  border-color: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+}
+
+.card {
+  background-color: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+.form-control {
+  background-color: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.form-control:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 0.2rem rgba(100, 100, 100, 0.25);
+}
