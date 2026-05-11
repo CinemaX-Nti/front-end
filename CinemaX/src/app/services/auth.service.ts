@@ -141,8 +141,8 @@ export class AuthService {
 
       console.log('Login successful:', user);
 
-      // Redirect to movies page
-      this.router.navigate(['/movies']);
+      // Redirect to home page
+      this.router.navigate(['/home']);
     }
   }
 

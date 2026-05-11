@@ -217,6 +217,9 @@ export class AuthComponent implements OnDestroy {
       next: (response) => {
         console.log('Google sign-in successful:', response);
         this.isGoogleLoading = false;
+        // Redirect to /home after successful Google sign-in/sign-up
+        // Note: The actual navigation happens in AuthService.handleAuthSuccess()
+        // This is for any additional signup-specific logic
       },
       error: (error) => {
         console.error('Google sign-in failed:', error);
