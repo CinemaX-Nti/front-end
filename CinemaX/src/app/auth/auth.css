@@ -1,28 +1,28 @@
-
 .auth-container {
-    min-height: 100vh;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
-                      url('/images/Cinema-bg.png'); 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  min-height: 100vh;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
+    url('/images/Cinema-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 
 .auth-card {
-    background-color: rgba(22, 22, 22, 0.8) !important; 
-    backdrop-filter: blur(10px); 
-    border: 1px solid rgba(255, 255, 255, 0.05); 
-    border-radius: 16px;
-    padding: 40px;
-    width: 100%;
-    max-width: 450px; 
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  background-color: rgba(22, 22, 22, 0.8) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
 }
+
 .auth-header {
   text-align: center;
   margin-bottom: 32px;
@@ -194,4 +194,191 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .password-toggle {
   right: 12px !important;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #a3a3a3;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 14px 24px;
+  width: 100%;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+/* Loading state for buttons */
+.btn-auth:disabled,
+.btn-secondary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-auth:disabled:hover,
+.btn-secondary:disabled:hover {
+  transform: none;
+}
+
+/* Step Indicator */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.step {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: #a3a3a3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  background-color: #e50914;
+  border-color: #e50914;
+  color: #ffffff;
+}
+
+.step-line {
+  flex: 1;
+  max-width: 60px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.step-line.active {
+  background-color: #e50914;
+}
+
+/* PIN Input */
+.pin-input {
+  text-align: center;
+  letter-spacing: 4px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Resend Button */
+.resend-section {
+  margin-top: 8px;
+}
+
+.resend-btn {
+  color: #e50914;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.resend-btn:hover:not(:disabled) {
+  color: #b20710;
+  text-decoration: underline;
+}
+
+.resend-btn:disabled {
+  color: #6b6b6b;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* Form Text */
+.form-text.text-muted {
+  color: #6b6b6b !important;
+  font-size: 0.85rem;
+}
+
+/* Spinner */
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
+
+/* Forgot Password Flow */
+.forgot-password-flow {
+  width: 100%;
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: #6b6b6b;
+  font-size: 0.9rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+  padding: 0 15px;
+}
+
+/* Google Sign-In Button */
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 10px;
+  color: #3c4043;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 12px 24px;
+  width: 100%;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-google:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: #d2d4d7;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-google:active:not(:disabled) {
+  background-color: #f1f3f4;
+}
+
+.btn-google:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
