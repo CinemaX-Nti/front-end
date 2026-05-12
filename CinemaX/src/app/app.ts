@@ -7,7 +7,7 @@ import { Navbar } from './components/navbar/navbar';
   standalone: true,
   imports: [RouterOutlet, Navbar],
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  styleUrls: ['./app.css'],
 })
 export class App {
   protected readonly title = signal('CinemaX');

@@ -1,0 +1,42 @@
+<section class="seats-page py-5">
+  <div class="container">
+    <div class="seats-header mb-4">
+      <h1 class="h3 text-white mb-1">Select Your Seats</h1>
+      <p class="text-white-50 mb-0">Click to select. Booked seats are disabled.</p>
+    </div>
+
+    <div class="legend mb-3">
+      <div class="legend-item"><span class="dot available"></span> Available</div>
+      <div class="legend-item"><span class="dot selected"></span> Selected</div>
+      <div class="legend-item"><span class="dot booked"></span> Booked</div>
+    </div>
+
+    <div class="screen-wrap mb-3">
+      <div class="screen">SCREEN</div>
+    </div>
+
+    <div class="seat-map-wrapper">
+      <div class="seat-map" aria-label="Seat layout">
+        <div class="row-grid" *ngFor="let row of rows">
+          <ng-container *ngFor="let cell of getRowRenderCells(row)">
+            <button *ngIf="cell; else aisle" type="button" class="seat" [class.selected]="cell?.state === 'selected'"
+              [class.booked]="cell?.state === 'booked'" [class.available]="cell?.state === 'available'"
+              (click)="toggleSeat(cell!)" [attr.aria-label]="cell?.id" [disabled]="cell?.state === 'booked'">
+              <span class="seat-num">{{ cell?.number | number:'2.0' }}</span>
+            </button>
+
+            <ng-template #aisle>
+              <div class="aisle-gap" aria-hidden="true"></div>
+            </ng-template>
+          </ng-container>
+
+          <div class="row-label">{{ row }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 text-white-50">
+      Selected: <span class="text-white">{{ selectedSeatIds.size }}</span>
+    </div>
+  </div>
+</section>

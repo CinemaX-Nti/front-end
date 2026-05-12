@@ -1,43 +1,55 @@
-<nav class="navbar navbar-expand-lg app-navbar">
-  <div class="navbar-container">
-    <!-- Logo -->
-    <a class="navbar-brand" routerLink="/home">CinemaX</a>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-1" routerLink="/">
+      <span class="fw-bold fs-5 text-white">{{ isAdmin ? 'CinemaX Admin' : 'CinemaX' }}</span>
+      <small *ngIf="isAdmin" class="text-muted mb-0">Dashboard & Management</small>
+    </a>
 
-    <!-- Toggle button for mobile -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Navbar content -->
     <div class="collapse navbar-collapse" id="navbarNav">
-      <!-- Middle section - Common items -->
-      <div class="navbar-middle" *ngIf="isUser && isAuthenticated">
-        <a class="nav-link" routerLink="/movies" routerLinkActive="active">Movies</a>
-      </div>
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/movies" routerLinkActive="active">Movies</a>
+        </li>
+        <li class="nav-item" *ngIf="!isAdmin">
+          <a class="nav-link" routerLink="/booking-history" routerLinkActive="active">My Bookings</a>
+        </li>
+        <li class="nav-item" *ngIf="!isAdmin">
+          <a class="nav-link" routerLink="/profile" routerLinkActive="active">Profile</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/admin" routerLinkActive="active">Dashboard</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/movies" routerLinkActive="active">Movies</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/halls" routerLinkActive="active">Halls</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/showtimes" routerLinkActive="active">Showtimes</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/menu" routerLinkActive="active">Menu</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/bookings" routerLinkActive="active">Bookings</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/users" routerLinkActive="active">Users</a>
+        </li>
+      </ul>
 
-      <!-- Role-based items - Admin -->
-      <div class="navbar-role-items" *ngIf="isAdmin && isAuthenticated">
-        <a class="nav-link" routerLink="/admin" routerLinkActive="active">Dashboard</a>
-        <a class="nav-link" routerLink="/admin/movies" routerLinkActive="active">Movies</a>
-        <a class="nav-link" routerLink="/admin/halls" routerLinkActive="active">Halls</a>
-        <a class="nav-link" routerLink="/admin/showtimes" routerLinkActive="active">Showtimes</a>
-        <a class="nav-link" routerLink="/admin/menu" routerLinkActive="active">Menu</a>
-        <a class="nav-link" routerLink="/admin/bookings" routerLinkActive="active">Bookings</a>
-      </div>
-
-      <!-- Right section - Auth buttons or logout -->
-      <div class="navbar-right ms-auto">
-        <div *ngIf="!isAuthenticated" class="auth-buttons">
-          <a class="btn btn-outline-primary btn-sm" routerLink="/sign-in">Sign In</a>
-          <a class="btn btn-primary btn-sm" routerLink="/sign-up">Sign Up</a>
-        </div>
-
-        <div *ngIf="isAuthenticated" class="auth-logout">
-          <button type="button" class="btn btn-outline-danger btn-sm" (click)="logout()">
-            Logout
-          </button>
-        </div>
+      <div class="d-flex align-items-center gap-2 ms-lg-3">
+        <a *ngIf="!isAuthenticated" class="btn btn-outline-light btn-sm" routerLink="/sign-in">Sign In</a>
+        <a *ngIf="!isAuthenticated" class="btn btn-danger btn-sm" routerLink="/sign-up">Sign Up</a>
+        <button *ngIf="isAuthenticated" type="button" class="btn btn-outline-light btn-sm" (click)="logout()">
+          Logout
+        </button>
       </div>
     </div>
   </div>

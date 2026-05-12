@@ -1,6 +1,9 @@
 import { Component, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, NavigationEnd } from '@angular/router';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Observable, from, BehaviorSubject, Subject } from 'rxjs';
+import { tap, catchError, switchMap, filter, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -12,6 +15,9 @@ import { AuthService } from '../services/auth.service';
 })
 export class AuthComponent implements OnDestroy {
   private authService = inject(AuthService);
+  private router = inject(Router);
+  private readonly destroy$ = new Subject<void>();
+
   // View toggles
   isLoginView = true;
   isForgotPasswordView = false;
@@ -24,6 +30,12 @@ export class AuthComponent implements OnDestroy {
     for (let i = currentYear; i >= currentYear - 100; i--) {
       this.years.push(i);
     }
+
+    this.setAuthViewFromUrl();
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.setAuthViewFromUrl());
   }
   // Password visibility toggles
   showPassword = false;
@@ -88,7 +100,8 @@ export class AuthComponent implements OnDestroy {
 
   // Toggle methods
   toggleView(): void {
-    this.isLoginView = !this.isLoginView;
+    const target = this.isLoginView ? '/sign-up' : '/sign-in';
+    this.router.navigate([target]);
     this.isForgotPasswordView = false;
     this.resetStep = 1;
   }
@@ -103,6 +116,17 @@ export class AuthComponent implements OnDestroy {
     }
   }
 
+  private setAuthViewFromUrl(): void {
+    const url = this.router.url;
+    if (url.startsWith('/sign-up')) {
+      this.isLoginView = false;
+      this.isForgotPasswordView = false;
+    } else {
+      this.isLoginView = true;
+      this.isForgotPasswordView = false;
+    }
+  }
+
   // Forgot password navigation
   showForgotPassword(): void {
     this.isForgotPasswordView = true;
@@ -113,6 +137,7 @@ export class AuthComponent implements OnDestroy {
   }
 
   backToLogin(): void {
+    this.router.navigate(['/sign-in']);
     this.isForgotPasswordView = false;
     this.resetStep = 1;
     this.stopResendTimer();

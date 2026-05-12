@@ -1,0 +1,89 @@
+<section class="movie-details-page py-5">
+  <div class="container">
+    <div class="card movie-card border-0 bg-black shadow-sm overflow-hidden mb-5">
+      <div class="row g-0 align-items-center">
+        <div class="col-12 col-lg-5 poster-panel">
+          <img [src]="movie.image" alt="{{ movie.title }} poster" class="img-fluid poster-image" />
+        </div>
+
+        <div class="col-12 col-lg-7 p-4 p-xl-5 text-white">
+          <span class="badge status-badge mb-3">{{ movie.status }}</span>
+          <h1 class="display-5 fw-bold mb-3">{{ movie.title }}</h1>
+          <div class="d-flex flex-wrap gap-3 align-items-center mb-3 text-white-50 movie-meta">
+            <span class="info-pill"><i class="bi bi-clock me-1"></i>{{ movie.duration }}</span>
+            <span class="info-pill"><i class="bi bi-calendar-event me-1"></i>{{ movie.releaseDate }}</span>
+            <span class="info-pill"><i class="bi bi-star-fill text-warning me-1"></i>{{ movie.rating }} / 10</span>
+          </div>
+          <div class="mb-3">
+            <span *ngFor="let genre of movie.genres" class="badge genre-badge me-2 mb-2">{{ genre }}</span>
+          </div>
+          <p class="lead text-white-75 mb-4">{{ movie.description }}</p>
+
+          <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
+            <button class="btn btn-danger btn-lg px-4">Watch Trailer</button>
+            <div class="text-white-50">
+              <small class="text-uppercase letter-spacing">Starting from</small>
+              <div class="h4 fw-bold text-white mb-0">${{ movie.startingPrice }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-xl-7">
+        <div class="card details-panel border-0 bg-dark text-white shadow-sm p-4 p-md-5">
+          <h2 class="h5 text-white mb-3">Synopsis</h2>
+          <p class="text-white-75 mb-4">{{ movie.synopsis }}</p>
+          <div class="row g-3">
+            <div class="col-12 col-sm-6">
+              <div class="info-block p-4 rounded-4">
+                <span class="detail-label">Director</span>
+                <p class="mb-0 detail-value">{{ movie.director }}</p>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <div class="info-block p-4 rounded-4">
+                <span class="detail-label">Cast</span>
+                <p class="mb-0 detail-value">{{ movie.cast }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-5">
+        <div id="showtimes" class="card schedule-panel border-0 bg-black text-white shadow-sm p-4 p-md-4">
+          <div class="d-flex align-items-center justify-content-between mb-4 gap-3 flex-column flex-sm-row">
+            <div>
+              <h2 class="h5 text-white mb-1">Available Showtimes</h2>
+              <p class="text-white-50 mb-0">Find the show that fits your evening.</p>
+            </div>
+            <span class="badge bg-warning text-dark">Best Seller</span>
+          </div>
+
+          <div class="list-group list-group-flush">
+            <div *ngFor="let showtime of movie.showtimes"
+              class="list-group-item showtime-item p-3 mb-3 rounded-4 border border-white-10 bg-dark">
+              <div class="d-flex flex-column flex-sm-row justify-content-between gap-3 align-items-start">
+                <div>
+                  <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    <span class="h5 text-white mb-0">{{ showtime.time }}</span>
+                    <span class="badge bg-white text-dark">{{ showtime.format }}</span>
+                    <span class="badge bg-primary">{{ showtime.tag }}</span>
+                  </div>
+                  <div class="text-white-50 small">{{ showtime.hall }} · {{ showtime.seats }} seats available</div>
+                </div>
+                <div class="text-sm-end">
+                  <div class="text-white fw-bold mb-2">Starting from ${{ showtime.price }}</div>
+                  <a [routerLink]="['/movies', movie.title, showtime.time]" class="btn btn-sm btn-danger">Select
+                    Seats</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

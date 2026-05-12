@@ -1,0 +1,77 @@
+<section class="movies-page py-5">
+  <div class="container">
+    <div
+      class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="text-white fw-bold mb-1">Movies</h1>
+        <p class="text-muted mb-0">Discover the latest and upcoming releases</p>
+      </div>
+
+    </div>
+
+    <div class="movies-filters card border-0 p-3 p-md-4 mb-5 shadow-sm">
+      <div class="row g-3 align-items-center">
+        <div class="col-12 col-md-6">
+          <div class="input-group bg-dark rounded-3 overflow-hidden border border-1 border-white-10">
+            <span class="input-group-text bg-transparent border-0 text-white-50"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control bg-transparent border-0 text-white" placeholder="Search movies..."
+              [(ngModel)]="searchTerm" autocomplete="off">
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <select class="form-select bg-dark text-white border-0" [(ngModel)]="statusFilter">
+            <option>All Status</option>
+            <option>Now Showing</option>
+            <option>Coming Soon</option>
+            <option>New</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <select class="form-select bg-dark text-white border-0" [(ngModel)]="genreFilter">
+            <option>All Genres</option>
+            <option>Sci-Fi</option>
+            <option>Adventure</option>
+            <option>Mystery</option>
+            <option>Supernatural</option>
+            <option>Drama</option>
+            <option>Action</option>
+            <option>Sports</option>
+            <option>Thriller</option>
+            <option>Crime</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-muted mb-3">{{ visibleMovies.length }} movies found</p>
+
+    <div class="row g-4">
+      <div *ngFor="let movie of visibleMovies" class="col-12 col-md-6 col-xl-4">
+
+        <div class="card movie-card overflow-hidden h-100 border-0 shadow-sm">
+          <div class="position-relative overflow-hidden">
+            <img [src]="movie.image" class="card-img-top" alt="{{ movie.title }}">
+            <span
+              class="badge position-absolute top-0 end-0 m-3 {{ movie.status === 'Coming Soon' ? 'bg-primary' : movie.status === 'New' ? 'bg-warning text-dark' : 'bg-success' }}">{{ movie.status }}</span>
+          </div>
+          <div class="card-body p-4 bg-dark text-white">
+            <h5 class="card-title fw-bold">{{ movie.title }}</h5>
+            <div class="d-flex flex-wrap align-items-center text-white-50 small gap-3 mb-3">
+              <span><i class="bi bi-clock me-1"></i>{{ movie.duration }}</span>
+              <span><i class="bi bi-star-fill text-warning me-1"></i>{{ movie.rating }}</span>
+            </div>
+            <div class="mb-4">
+              <span *ngFor="let genre of movie.genres"
+                class="badge rounded-pill bg-secondary text-white me-2 mb-2">{{ genre }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <a [routerLink]="['/movies', movie.id]" class="btn btn-outline-light btn-sm">View Details</a>
+              <button class="btn btn-danger btn-sm">Book Now</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

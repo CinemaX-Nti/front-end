@@ -1,0 +1,231 @@
+/* Movie details page theme (cinemaX) */
+
+.movie-details-page {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background-color: #090b12;
+}
+
+/* Cinematic background */
+.movie-details-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(900px circle at 10% 10%, rgba(229, 9, 20, 0.25), transparent 55%),
+    radial-gradient(700px circle at 90% 30%, rgba(99, 102, 241, 0.22), transparent 60%),
+    radial-gradient(900px circle at 50% 100%, rgba(16, 185, 129, 0.12), transparent 60%),
+    linear-gradient(180deg, rgba(9, 11, 18, 0.85) 0%, rgba(9, 11, 18, 1) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Subtle grain */
+.movie-details-page::after {
+  content: "";
+  position: absolute;
+  inset: -40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.movie-details-page > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero card */
+.movie-card {
+  background: rgba(18, 18, 18, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px;
+}
+
+.poster-panel {
+  background: rgba(0, 0, 0, 0.25);
+  position: relative;
+}
+
+.poster-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.65) 0%,
+    rgba(0, 0, 0, 0.15) 45%,
+    rgba(0, 0, 0, 0.75) 100%
+  );
+  pointer-events: none;
+}
+
+.poster-image {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  transform: scale(1.01);
+  filter: saturate(1.05) contrast(1.02);
+}
+
+@media (max-width: 991.98px) {
+  .poster-image {
+    height: 380px;
+  }
+}
+
+@media (max-width: 576px) {
+  .poster-image {
+    height: 310px;
+  }
+}
+
+/* Status badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(229, 9, 20, 0.16) !important;
+  color: #ffb4b4 !important;
+  border: 1px solid rgba(229, 9, 20, 0.35) !important;
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 16px 40px rgba(229, 9, 20, 0.08);
+  font-weight: 700;
+}
+
+/* Movie title */
+.movie-card h1 {
+  text-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.2px;
+}
+
+/* Meta pills */
+.movie-meta {
+  margin-top: 0.5rem;
+}
+
+.info-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.92rem;
+}
+
+.info-pill i {
+  opacity: 0.95;
+}
+
+/* Genre badges */
+.genre-badge {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  font-weight: 600;
+}
+
+/* Buttons */
+.btn-danger {
+  background: linear-gradient(135deg, #e50914 0%, #ff2a2a 100%) !important;
+  border-color: transparent !important;
+  border-radius: 999px !important;
+  padding-inline: 1rem;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+/* Trailer CTA button a little more premium */
+.movie-card .btn.btn-lg {
+  padding: 0.9rem 1.5rem;
+  letter-spacing: 0.01em;
+  box-shadow: 0 18px 40px rgba(229, 9, 20, 0.18);
+}
+
+/* Details + schedule cards */
+.details-panel,
+.schedule-panel {
+  background: rgba(24, 27, 35, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px;
+}
+
+.details-panel {
+  background: rgba(24, 27, 35, 0.55) !important;
+}
+
+/* Section headers */
+.details-panel h2,
+.schedule-panel h2 {
+  letter-spacing: 0.2px;
+}
+
+/* Labels inside info blocks */
+.info-block {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.detail-label {
+  display: block;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.35rem;
+}
+
+.detail-value {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* Showtimes list */
+.showtime-item {
+  background: rgba(0, 0, 0, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.showtime-item:hover {
+  border-color: rgba(229, 9, 20, 0.35) !important;
+}
+
+.showtime-item .badge {
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  font-weight: 700;
+}
+
+.showtime-item .btn {
+  border-radius: 999px !important;
+}
+
+.text-uppercase {
+  letter-spacing: 0.15em;
+}
+
+/* spacing tweaks */
+#showtimes {
+  position: sticky;
+  top: 84px;
+}
+
+@media (max-width: 991.98px) {
+  #showtimes {
+    position: static;
+  }
+}
+

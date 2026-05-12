@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './navbar.html',
-  styleUrl: './navbar.css',
+  styleUrls: ['./navbar.css'],
 })
 export class Navbar {
   protected readonly authService = inject(AuthService);
@@ -22,12 +22,8 @@ export class Navbar {
     return this.authService.currentUserValue?.role === 'admin';
   }
 
-  protected get isUser(): boolean {
-    return this.authService.currentUserValue?.role === 'user';
-  }
-
   protected logout(): void {
     this.authService.logout();
-    this.router.navigate(['/landing']);
+    this.router.navigate(['/']);
   }
 }
