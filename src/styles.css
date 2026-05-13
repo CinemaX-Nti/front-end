@@ -1,0 +1,38 @@
+/* Global Figma Theme Variables */
+:root {
+  --cinema-black: #000000;
+  --cinema-card: #121212;
+  --cinema-red: #e50914;
+  --cinema-red-hover: #b20710;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --border-color: #333333;
+  --success-green: #2ecc71;
+  --customer-blue: #3498db;
+  --warning-yellow: #f1c40f;
+  
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: var(--cinema-black);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--cinema-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

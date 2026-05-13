@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, forkJoin, map } from 'rxjs';
 import { AuthService } from './auth.service';
+import { API_ENDPOINTS } from './api-endpoints';
 
 export interface MenuItem {
   id: string;
@@ -33,7 +34,7 @@ type BackendMenuItem = MenuResponse['data'][number];
 export class MenuService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly apiUrl = 'http://localhost:3000/restaurant/menu';
+  private readonly apiUrl = API_ENDPOINTS.restaurantMenu;
 
   getMenuItems(): Observable<MenuItem[]> {
     return forkJoin([

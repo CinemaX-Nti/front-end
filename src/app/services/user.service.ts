@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { AuthService } from './auth.service';
+import { API_ENDPOINTS } from './api-endpoints';
 
 export interface AdminUser {
   id: string;
@@ -34,7 +35,7 @@ interface UsersResponse {
 export class UserService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly apiUrl = 'http://localhost:3000/users';
+  private readonly apiUrl = API_ENDPOINTS.users;
 
   getUsers(): Observable<AdminUser[]> {
     return this.http.get<UsersResponse>(this.apiUrl, this.requestOptions()).pipe(

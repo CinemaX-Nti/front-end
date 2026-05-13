@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { AuthService } from './auth.service';
+import { API_ENDPOINTS } from './api-endpoints';
 
 export interface Booking {
   id: string;
@@ -43,8 +44,8 @@ type BackendBooking = BookingsResponse['data'][number];
 export class BookingService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly bookingsApiUrl = 'http://localhost:3000/bookings';
-  private readonly adminApiUrl = 'http://localhost:3000/admin';
+  private readonly bookingsApiUrl = API_ENDPOINTS.bookings;
+  private readonly adminApiUrl = API_ENDPOINTS.admin;
 
   getBookings(): Observable<Booking[]> {
     return this.http.get<BookingsResponse>(`${this.bookingsApiUrl}?limit=100`, this.requestOptions()).pipe(
