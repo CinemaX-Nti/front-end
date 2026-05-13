@@ -42,6 +42,22 @@
   margin: 0;
 }
 
+.auth-message {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid rgba(46, 204, 113, 0.25);
+  color: #c8f7da;
+  font-size: 0.9rem;
+}
+
+.auth-message--error {
+  background: rgba(229, 9, 20, 0.12);
+  border-color: rgba(229, 9, 20, 0.25);
+  color: #ffc8cb;
+}
+
 .auth-form {
   width: 100%;
 }

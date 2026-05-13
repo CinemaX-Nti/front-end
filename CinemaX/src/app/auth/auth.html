@@ -11,6 +11,10 @@
             </p>
           </div>
 
+          <div *ngIf="authMessage" class="auth-message" [class.auth-message--error]="authMessageType === 'error'">
+            {{ authMessage }}
+          </div>
+
           <!-- Login Form -->
           <form *ngIf="isLoginView && !isForgotPasswordView" [formGroup]="loginForm" (ngSubmit)="onSubmit()"
             class="auth-form">

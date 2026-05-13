@@ -43,6 +43,34 @@ export interface AuthResponse {
   };
 }
 
+export interface SignInPayload {
+  email: string;
+  password: string;
+}
+
+export interface SignUpPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+}
+
+export interface BasicResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface SignUpResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    user: User;
+    requiresEmailConfirmation?: boolean;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -57,7 +85,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  private apiUrl = 'http://localhost:5000/api/users'; // Adjust based on your backend URL
+  private apiUrl = 'http://localhost:3000/users';
 
   private isGoogleLoadingSubject = new BehaviorSubject<boolean>(false);
   public isGoogleLoading$ = this.isGoogleLoadingSubject.asObservable();
@@ -110,6 +138,30 @@ export class AuthService {
     );
   }
 
+  signIn(payload: SignInPayload): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/signin`, payload).pipe(
+      tap((response) => {
+        this.handleAuthSuccess(response);
+      }),
+    );
+  }
+
+  signUp(payload: SignUpPayload): Observable<SignUpResponse> {
+    return this.http.post<SignUpResponse>(`${this.apiUrl}/signup`, payload);
+  }
+
+  requestPasswordReset(email: string): Observable<BasicResponse> {
+    return this.http.post<BasicResponse>(`${this.apiUrl}/forget-password`, { email });
+  }
+
+  resendPasswordResetOtp(email: string): Observable<BasicResponse> {
+    return this.http.post<BasicResponse>(`${this.apiUrl}/resend-password-reset-otp`, { email });
+  }
+
+  resetPassword(payload: { email: string; otp: string; newPassword: string }): Observable<BasicResponse> {
+    return this.http.post<BasicResponse>(`${this.apiUrl}/reset-password`, payload);
+  }
+
   /**
    * Send Google user data to backend
    */
@@ -141,8 +193,7 @@ export class AuthService {
 
       console.log('Login successful:', user);
 
-      // Redirect to home page
-      this.router.navigate(['/home']);
+      this.router.navigate([user.role === 'admin' ? '/admin' : '/movies']);
     }
   }
 

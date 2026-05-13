@@ -21,7 +21,7 @@ export interface iMovie {
 export class MoviesService {
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://localhost:5000/movies';
+  private apiUrl = 'http://localhost:3000/movies';
 
   getMovies(): Observable<iMovie[]> {
     return this.http.get<any[]>(this.apiUrl).pipe(

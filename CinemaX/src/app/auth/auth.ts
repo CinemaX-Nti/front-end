@@ -2,8 +2,8 @@ import { Component, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Observable, from, BehaviorSubject, Subject } from 'rxjs';
-import { tap, catchError, switchMap, filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -49,6 +49,9 @@ export class AuthComponent implements OnDestroy {
   isResendLoading = false;
   isGoogleLoading = false;
   resendTimer = 0;
+  authMessage = '';
+  authMessageType: 'success' | 'error' = 'success';
+  private resetEmail = '';
   private timerInterval: any;
 
   // Login form
@@ -148,16 +151,46 @@ export class AuthComponent implements OnDestroy {
     if (this.isLoginView) {
       if (this.loginForm.valid) {
         this.isLoading = true;
-        console.log('Login Form Value:', this.loginForm.value);
-        setTimeout(() => this.isLoading = false, 2000);
+        this.clearMessage();
+        this.authService.signIn({
+          email: this.loginForm.value.email ?? '',
+          password: this.loginForm.value.password ?? ''
+        }).subscribe({
+          next: (response) => {
+            this.isLoading = false;
+            this.setMessage(response.message || 'Signed in successfully.', 'success');
+          },
+          error: (error) => {
+            this.isLoading = false;
+            this.setMessage(error?.error?.message || 'Sign in failed.', 'error');
+          }
+        });
       } else {
         this.loginForm.markAllAsTouched();
       }
     } else {
       if (this.registerForm.valid) {
         this.isLoading = true;
-        console.log('Register Form Value:', this.registerForm.value);
-        setTimeout(() => this.isLoading = false, 2000);
+        this.clearMessage();
+        this.authService.signUp({
+          firstName: this.registerForm.value.firstName ?? '',
+          lastName: this.registerForm.value.lastName ?? '',
+          email: this.registerForm.value.email ?? '',
+          password: this.registerForm.value.password ?? '',
+          phoneNumber: this.registerForm.value.phone ?? '',
+          dateOfBirth: this.buildDateOfBirth(),
+        }).subscribe({
+          next: (response) => {
+            this.isLoading = false;
+            this.setMessage(response.message || 'Account created successfully.', 'success');
+            this.router.navigate(['/sign-in']);
+            this.registerForm.reset();
+          },
+          error: (error) => {
+            this.isLoading = false;
+            this.setMessage(error?.error?.message || 'Sign up failed.', 'error');
+          }
+        });
       } else {
         this.registerForm.markAllAsTouched();
       }
@@ -167,12 +200,21 @@ export class AuthComponent implements OnDestroy {
   sendVerificationCode(): void {
     if (this.forgotPasswordStep1Form.valid) {
       this.isLoading = true;
-      console.log('Sending verification code to:', this.forgotPasswordStep1Form.value.email);
-      setTimeout(() => {
-        this.isLoading = false;
-        this.resetStep = 2;
-        this.startResendTimer();
-      }, 1500);
+      this.clearMessage();
+      const email = this.forgotPasswordStep1Form.value.email ?? '';
+      this.authService.requestPasswordReset(email).subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          this.resetEmail = email;
+          this.resetStep = 2;
+          this.startResendTimer();
+          this.setMessage(response.message || 'Verification code sent.', 'success');
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.setMessage(error?.error?.message || 'Could not send verification code.', 'error');
+        }
+      });
     } else {
       this.forgotPasswordStep1Form.markAllAsTouched();
     }
@@ -180,13 +222,9 @@ export class AuthComponent implements OnDestroy {
 
   verifyCode(): void {
     if (this.forgotPasswordStep2Form.valid) {
-      this.isLoading = true;
-      console.log('Verifying PIN:', this.forgotPasswordStep2Form.value.pin);
-      setTimeout(() => {
-        this.isLoading = false;
-        this.resetStep = 3;
-        this.stopResendTimer();
-      }, 1500);
+      this.clearMessage();
+      this.resetStep = 3;
+      this.stopResendTimer();
     } else {
       this.forgotPasswordStep2Form.markAllAsTouched();
     }
@@ -195,12 +233,22 @@ export class AuthComponent implements OnDestroy {
   resetPassword(): void {
     if (this.forgotPasswordStep3Form.valid) {
       this.isLoading = true;
-      console.log('Resetting password with:', this.forgotPasswordStep3Form.value);
-      setTimeout(() => {
-        this.isLoading = false;
-        this.backToLogin();
-        alert('Password reset successful! Please sign in with your new password.');
-      }, 1500);
+      this.clearMessage();
+      this.authService.resetPassword({
+        email: this.resetEmail,
+        otp: this.forgotPasswordStep2Form.value.pin ?? '',
+        newPassword: this.forgotPasswordStep3Form.value.newPassword ?? '',
+      }).subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          this.backToLogin();
+          this.setMessage(response.message || 'Password reset successful. Please sign in.', 'success');
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.setMessage(error?.error?.message || 'Password reset failed.', 'error');
+        }
+      });
     } else {
       this.forgotPasswordStep3Form.markAllAsTouched();
     }
@@ -209,11 +257,18 @@ export class AuthComponent implements OnDestroy {
   resendCode(): void {
     if (this.resendTimer > 0) return;
     this.isResendLoading = true;
-    console.log('Resending verification code...');
-    setTimeout(() => {
-      this.isResendLoading = false;
-      this.startResendTimer();
-    }, 1000);
+    this.clearMessage();
+    this.authService.resendPasswordResetOtp(this.resetEmail).subscribe({
+      next: (response) => {
+        this.isResendLoading = false;
+        this.startResendTimer();
+        this.setMessage(response.message || 'Verification code resent.', 'success');
+      },
+      error: (error) => {
+        this.isResendLoading = false;
+        this.setMessage(error?.error?.message || 'Could not resend verification code.', 'error');
+      }
+    });
   }
 
   private startResendTimer(): void {
@@ -240,18 +295,38 @@ export class AuthComponent implements OnDestroy {
     this.isGoogleLoading = true;
     this.authService.signInWithGoogle().subscribe({
       next: (response) => {
-        console.log('Google sign-in successful:', response);
         this.isGoogleLoading = false;
-        // Redirect to /home after successful Google sign-in/sign-up
-        // Note: The actual navigation happens in AuthService.handleAuthSuccess()
-        // This is for any additional signup-specific logic
+        this.setMessage(response.message || 'Google sign-in successful.', 'success');
       },
       error: (error) => {
-        console.error('Google sign-in failed:', error);
         this.isGoogleLoading = false;
-        alert('Google sign-in failed. Please try again.');
+        this.setMessage(error?.error?.message || 'Google sign-in failed. Please try again.', 'error');
       }
     });
+  }
+
+  private buildDateOfBirth(): string | undefined {
+    const year = this.registerForm.value.birthYear;
+    const month = this.registerForm.value.birthMonth;
+    const day = this.registerForm.value.birthDay;
+
+    if (!year || !month || !day) {
+      return undefined;
+    }
+
+    const paddedMonth = String(month).padStart(2, '0');
+    const paddedDay = String(day).padStart(2, '0');
+    return `${year}-${paddedMonth}-${paddedDay}`;
+  }
+
+  private setMessage(message: string, type: 'success' | 'error'): void {
+    this.authMessage = message;
+    this.authMessageType = type;
+  }
+
+  private clearMessage(): void {
+    this.authMessage = '';
+    this.authMessageType = 'success';
   }
 
   ngOnDestroy(): void {
