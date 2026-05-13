@@ -19,15 +19,22 @@ export class BookingsManagementPage implements OnInit {
   searchQuery: string = '';
   statusFilter: string = 'ALL';
   paymentFilter: string = 'ALL';
+  errorMessage: string = '';
 
   ngOnInit(): void {
     this.loadBookings();
   }
 
   loadBookings(): void {
-    this.bookingService.getBookings().subscribe(data => {
-      this.bookings = data;
-      this.applyFilters();
+    this.errorMessage = '';
+    this.bookingService.getBookings().subscribe({
+      next: (data) => {
+        this.bookings = data;
+        this.applyFilters();
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to load bookings from the backend.';
+      }
     });
   }
 
@@ -35,32 +42,40 @@ export class BookingsManagementPage implements OnInit {
     let filtered = this.bookings;
 
     if (this.statusFilter !== 'ALL') {
-      filtered = filtered.filter(b => b.bookingStatus === this.statusFilter);
+      filtered = filtered.filter((booking) => booking.bookingStatus === this.statusFilter);
     }
 
     if (this.paymentFilter !== 'ALL') {
-      filtered = filtered.filter(b => b.paymentStatus === this.paymentFilter);
+      filtered = filtered.filter((booking) => booking.paymentStatus === this.paymentFilter);
     }
 
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(b => 
-        b.id.toLowerCase().includes(query) || 
-        b.customerName.toLowerCase().includes(query) ||
-        b.movieName.toLowerCase().includes(query)
+      filtered = filtered.filter((booking) => 
+        booking.id.toLowerCase().includes(query) || 
+        booking.customerName.toLowerCase().includes(query) ||
+        booking.movieName.toLowerCase().includes(query)
       );
     }
 
     this.filteredBookings = filtered;
   }
 
-  updateStatus(booking: Booking, newStatus: 'CONFIRMED' | 'CANCELLED' | 'PENDING'): void {
-    this.bookingService.updateBookingStatus(booking.id, newStatus).subscribe(success => {
-      if (success) {
-        booking.bookingStatus = newStatus;
+  approvePayment(booking: Booking): void {
+    this.bookingService.approvePayment(booking.id).subscribe({
+      next: () => {
+        booking.bookingStatus = 'CONFIRMED';
+        booking.paymentStatus = 'PAID';
+        booking.canApprovePayment = false;
         this.applyFilters();
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to approve payment.';
       }
     });
   }
-}
 
+  explainUnavailableActions(): void {
+    this.errorMessage = 'The backend currently supports payment approval only for bookings waiting for admin approval.';
+  }
+}

@@ -1,16 +1,18 @@
 <div class="admin-dashboard-container">
-  <!-- Header Section -->
   <div class="dashboard-header">
     <div class="header-titles">
       <h1 class="page-title">Bookings Management</h1>
-      <p class="page-subtitle">View and manage all cinema bookings</p>
+      <p class="page-subtitle">View real bookings from the database and approve pending payments</p>
     </div>
   </div>
 
-  <!-- Filters Section -->
+  <div *ngIf="errorMessage" class="empty-state">
+    <p>{{ errorMessage }}</p>
+  </div>
+
   <div class="filters-bar">
     <div class="search-container">
-      <i class="search-icon">🔍</i>
+      <span class="search-icon" aria-hidden="true">⌕</span>
       <input 
         type="text" 
         class="search-input" 
@@ -26,18 +28,20 @@
         <option value="CONFIRMED">Confirmed</option>
         <option value="PENDING">Pending</option>
         <option value="CANCELLED">Cancelled</option>
+        <option value="EXPIRED">Expired</option>
       </select>
       
       <select class="filter-select" [(ngModel)]="paymentFilter" (change)="applyFilters()">
         <option value="ALL">All Payments</option>
         <option value="PAID">Paid</option>
-        <option value="UNPAID">Unpaid</option>
+        <option value="WAITING_TRANSFER">Waiting Transfer</option>
+        <option value="WAITING_APPROVAL">Waiting Approval</option>
+        <option value="FAILED">Failed</option>
         <option value="REFUNDED">Refunded</option>
       </select>
     </div>
   </div>
 
-  <!-- Table Section -->
   <div class="table-card">
     <table class="admin-table">
       <thead>
@@ -63,7 +67,7 @@
             <div class="movie-name">{{ booking.movieName }}</div>
             <div class="hall-name text-secondary">{{ booking.hallName }}</div>
           </td>
-          <td class="text-secondary">{{ booking.showtime }}</td>
+          <td class="text-secondary">{{ booking.showtime | date:'short' }}</td>
           <td>
             <div class="seat-pills">
               <span class="seat-pill" *ngFor="let seat of booking.seats">{{ seat }}</span>
@@ -80,18 +84,20 @@
                   [ngClass]="{
                     'pill-success': booking.bookingStatus === 'CONFIRMED',
                     'pill-warning': booking.bookingStatus === 'PENDING',
-                    'pill-danger': booking.bookingStatus === 'CANCELLED'
+                    'pill-danger': booking.bookingStatus === 'CANCELLED',
+                    'pill-secondary': booking.bookingStatus === 'EXPIRED'
                   }">
               {{ booking.bookingStatus }}
             </span>
           </td>
           <td>
             <div class="dropdown-container">
-              <select class="action-select" (change)="updateStatus(booking, $any($event.target).value)" [value]="booking.bookingStatus">
-                <option value="CONFIRMED">Confirm</option>
-                <option value="PENDING">Set Pending</option>
-                <option value="CANCELLED">Cancel</option>
-              </select>
+              <button *ngIf="booking.canApprovePayment" class="action-select" (click)="approvePayment(booking)">
+                Approve Payment
+              </button>
+              <button *ngIf="!booking.canApprovePayment" class="action-select" (click)="explainUnavailableActions()">
+                View Only
+              </button>
             </div>
           </td>
         </tr>

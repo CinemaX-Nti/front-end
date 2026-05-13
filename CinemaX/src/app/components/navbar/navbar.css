@@ -1,2 +1,12 @@
-/* Navbar styling is handled using Bootstrap utility classes. */
+.navbar .container-fluid {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 992px) {
+  .navbar .container-fluid {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
 

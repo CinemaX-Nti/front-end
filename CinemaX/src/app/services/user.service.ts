@@ -1,5 +1,7 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { AuthService } from './auth.service';
 
 export interface AdminUser {
   id: string;
@@ -12,37 +14,48 @@ export interface AdminUser {
   joinedDate: string;
 }
 
+interface UsersResponse {
+  success: boolean;
+  data: Array<{
+    _id: string;
+    name: string;
+    email: string;
+    phoneNumber?: string;
+    role: 'user' | 'admin';
+    provider: string;
+    confirmed: boolean;
+    createdAt: string;
+  }>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  // Mock data based on Figma design
-  private mockUsers: AdminUser[] = [
-    { id: 'USR-001', name: 'John Doe', email: 'john@example.com', phone: '+1 234 567 8900', role: 'ADMIN', provider: 'Local', emailStatus: 'VERIFIED', joinedDate: '2026-01-15' },
-    { id: 'USR-002', name: 'Jane Smith', email: 'jane.smith@gmail.com', phone: '+1 987 654 3210', role: 'CUSTOMER', provider: 'Google', emailStatus: 'VERIFIED', joinedDate: '2026-02-20' },
-    { id: 'USR-003', name: 'Mike Johnson', email: 'mike.j@example.com', phone: '+1 555 123 4567', role: 'CUSTOMER', provider: 'Local', emailStatus: 'UNVERIFIED', joinedDate: '2026-03-05' },
-    { id: 'USR-004', name: 'Sarah Williams', email: 'sarah.w@example.com', phone: '+1 444 987 6543', role: 'CUSTOMER', provider: 'Google', emailStatus: 'VERIFIED', joinedDate: '2026-04-10' },
-    { id: 'USR-005', name: 'David Brown', email: 'david.b@example.com', phone: '+1 222 333 4444', role: 'ADMIN', provider: 'Local', emailStatus: 'VERIFIED', joinedDate: '2026-05-01' },
-  ];
-
-  constructor() {}
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly apiUrl = 'http://localhost:3000/users';
 
   getUsers(): Observable<AdminUser[]> {
-    return of(this.mockUsers);
+    return this.http.get<UsersResponse>(this.apiUrl, this.requestOptions()).pipe(
+      map((response) =>
+        response.data.map((user) => ({
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phoneNumber ?? 'N/A',
+          role: user.role === 'admin' ? 'ADMIN' : 'CUSTOMER',
+          provider: user.provider === 'google' ? 'Google' : 'Local',
+          emailStatus: user.confirmed ? 'VERIFIED' : 'UNVERIFIED',
+          joinedDate: user.createdAt,
+        })),
+      ),
+    );
   }
 
-  updateUserRole(id: string, newRole: 'ADMIN' | 'CUSTOMER'): Observable<boolean> {
-    const user = this.mockUsers.find(u => u.id === id);
-    if (user) {
-      user.role = newRole;
-      return of(true);
-    }
-    return of(false);
-  }
-
-  deleteUser(id: string): Observable<boolean> {
-    const initialLength = this.mockUsers.length;
-    this.mockUsers = this.mockUsers.filter(u => u.id !== id);
-    return of(this.mockUsers.length < initialLength);
+  private requestOptions(): { headers: HttpHeaders } {
+    return {
+      headers: new HttpHeaders(this.authService.getAuthHeaders()),
+    };
   }
 }

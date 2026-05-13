@@ -1,0 +1,7 @@
+@import '../admin-movies-management/admin-movies-management.css';
+.checkbox-row {
+  display: flex !important;
+  align-items: center;
+  gap: 0.7rem;
+}
+.checkbox-row input { width: auto; }

@@ -1,5 +1,7 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, forkJoin, map } from 'rxjs';
+import { AuthService } from './auth.service';
 
 export interface MenuItem {
   id: string;
@@ -11,47 +13,106 @@ export interface MenuItem {
   image?: string;
 }
 
+interface MenuResponse {
+  success: boolean;
+  data: Array<{
+    _id: string;
+    name: string;
+    category: string;
+    description: string;
+    price: number;
+    isAvailable: boolean;
+  }>;
+}
+
+type BackendMenuItem = MenuResponse['data'][number];
+
 @Injectable({
   providedIn: 'root'
 })
 export class MenuService {
-  private mockItems: MenuItem[] = [
-    { id: 'MENU-01', name: 'Large Popcorn', category: 'SNACK', description: 'Freshly popped buttery popcorn', price: 8.50, isAvailable: true },
-    { id: 'MENU-02', name: 'Medium Popcorn', category: 'SNACK', description: 'Classic movie theater popcorn', price: 6.50, isAvailable: true },
-    { id: 'MENU-03', name: 'Nachos with Cheese', category: 'SNACK', description: 'Crispy tortilla chips with hot cheddar', price: 7.00, isAvailable: true },
-    { id: 'MENU-04', name: 'Large Soda', category: 'BEVERAGE', description: '32oz fountain drink of your choice', price: 5.50, isAvailable: true },
-    { id: 'MENU-05', name: 'Bottled Water', category: 'BEVERAGE', description: '500ml pure spring water', price: 3.50, isAvailable: true },
-    { id: 'MENU-06', name: 'Couple Combo', category: 'COMBO', description: '1 Large Popcorn + 2 Medium Drinks', price: 17.00, isAvailable: true },
-    { id: 'MENU-07', name: 'M&Ms Peanut', category: 'SNACK', description: 'Share size chocolate candy', price: 4.50, isAvailable: false },
-  ];
-
-  constructor() {}
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly apiUrl = 'http://localhost:3000/restaurant/menu';
 
   getMenuItems(): Observable<MenuItem[]> {
-    return of(this.mockItems);
+    return forkJoin([
+      this.http.get<MenuResponse>(`${this.apiUrl}?isAvailable=true&limit=100&sortBy=createdAt&sortOrder=desc`, this.requestOptions()),
+      this.http.get<MenuResponse>(`${this.apiUrl}?isAvailable=false&limit=100&sortBy=createdAt&sortOrder=desc`, this.requestOptions()),
+    ]).pipe(
+      map(([availableResponse, unavailableResponse]) => {
+        const uniqueItems = new Map<string, BackendMenuItem>();
+
+        [...availableResponse.data, ...unavailableResponse.data].forEach((item) => {
+          uniqueItems.set(item._id, item);
+        });
+
+        return Array.from(uniqueItems.values()).map((item) => this.mapMenuItem(item));
+      }),
+    );
   }
 
-  toggleAvailability(id: string): Observable<boolean> {
-    const item = this.mockItems.find(i => i.id === id);
-    if (item) {
-      item.isAvailable = !item.isAvailable;
-      return of(true);
-    }
-    return of(false);
+  toggleAvailability(item: MenuItem): Observable<MenuItem> {
+    return this.http.put<BackendMenuItem>(
+      `${this.apiUrl}/${item.id}`,
+      {
+        name: item.name,
+        category: this.toBackendCategory(item.category),
+        description: item.description,
+        price: item.price,
+        isAvailable: !item.isAvailable,
+      },
+      this.requestOptions(),
+    ).pipe(map((updatedItem) => this.mapMenuItem(updatedItem)));
   }
 
-  deleteItem(id: string): Observable<boolean> {
-    const initialLength = this.mockItems.length;
-    this.mockItems = this.mockItems.filter(i => i.id !== id);
-    return of(this.mockItems.length < initialLength);
+  deleteItem(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, this.requestOptions());
   }
 
   addItem(item: Omit<MenuItem, 'id'>): Observable<MenuItem> {
-    const newItem: MenuItem = {
-      ...item,
-      id: `MENU-${Math.floor(10 + Math.random() * 90)}` // Generate random ID like MENU-45
+    return this.http.post<BackendMenuItem>(
+      this.apiUrl,
+      {
+        name: item.name,
+        category: this.toBackendCategory(item.category),
+        description: item.description,
+        price: item.price,
+        isAvailable: item.isAvailable,
+      },
+      this.requestOptions(),
+    ).pipe(map((createdItem) => this.mapMenuItem(createdItem)));
+  }
+
+  private mapMenuItem(item: BackendMenuItem): MenuItem {
+    return {
+      id: item._id,
+      name: item.name,
+      category: this.toUiCategory(item.category),
+      description: item.description,
+      price: item.price,
+      isAvailable: item.isAvailable,
     };
-    this.mockItems = [...this.mockItems, newItem];
-    return of(newItem);
+  }
+
+  private toUiCategory(category: string): MenuItem['category'] {
+    const normalized = category.trim().toUpperCase();
+    if (normalized === 'BEVERAGE' || normalized === 'BEVERAGES') {
+      return 'BEVERAGE';
+    }
+    if (normalized === 'COMBO' || normalized === 'COMBOS') {
+      return 'COMBO';
+    }
+    return 'SNACK';
+  }
+
+  private toBackendCategory(category: MenuItem['category']): string {
+    return category.toLowerCase();
+  }
+
+  private requestOptions(): { headers: HttpHeaders } {
+    return {
+      headers: new HttpHeaders(this.authService.getAuthHeaders()),
+    };
   }
 }

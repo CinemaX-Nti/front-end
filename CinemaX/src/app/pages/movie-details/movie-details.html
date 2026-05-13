@@ -1,5 +1,13 @@
 <section class="movie-details-page py-5">
   <div class="container">
+    <div *ngIf="errorMessage" class="alert alert-warning border-0 movie-alert mb-4">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="isLoading" class="card details-panel border-0 text-white shadow-sm p-4 p-md-5 mb-5">
+      Loading movie details...
+    </div>
+
     <div class="card movie-card border-0 bg-black shadow-sm overflow-hidden mb-5">
       <div class="row g-0 align-items-center">
         <div class="col-12 col-lg-5 poster-panel">
@@ -8,8 +16,8 @@
 
         <div class="col-12 col-lg-7 p-4 p-xl-5 text-white">
           <span class="badge status-badge mb-3">{{ movie.status }}</span>
-          <h1 class="display-5 fw-bold mb-3">{{ movie.title }}</h1>
-          <div class="d-flex flex-wrap gap-3 align-items-center mb-3 text-white-50 movie-meta">
+          <h1 class="movie-title mb-3">{{ movie.title }}</h1>
+          <div class="d-flex flex-wrap align-items-center mb-3 text-white-50 movie-meta">
             <span class="info-pill"><i class="bi bi-clock me-1"></i>{{ movie.duration }}</span>
             <span class="info-pill"><i class="bi bi-calendar-event me-1"></i>{{ movie.releaseDate }}</span>
             <span class="info-pill"><i class="bi bi-star-fill text-warning me-1"></i>{{ movie.rating }} / 10</span>
@@ -17,13 +25,15 @@
           <div class="mb-3">
             <span *ngFor="let genre of movie.genres" class="badge genre-badge me-2 mb-2">{{ genre }}</span>
           </div>
-          <p class="lead text-white-75 mb-4">{{ movie.description }}</p>
+          <p class="movie-description lead text-white-75 mb-4">{{ movie.description }}</p>
 
           <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
-            <button class="btn btn-danger btn-lg px-4">Watch Trailer</button>
-            <div class="text-white-50">
-              <small class="text-uppercase letter-spacing">Starting from</small>
-              <div class="h4 fw-bold text-white mb-0">${{ movie.startingPrice }}</div>
+            <button class="btn btn-danger btn-lg px-4" type="button" (click)="openTrailer()">
+              Watch Trailer
+            </button>
+            <div class="price-block">
+              <small class="price-label text-uppercase letter-spacing">Starting from</small>
+              <div class="price-value mb-0">${{ movie.startingPrice }}</div>
             </div>
           </div>
         </div>
@@ -35,19 +45,11 @@
         <div class="card details-panel border-0 bg-dark text-white shadow-sm p-4 p-md-5">
           <h2 class="h5 text-white mb-3">Synopsis</h2>
           <p class="text-white-75 mb-4">{{ movie.synopsis }}</p>
-          <div class="row g-3">
-            <div class="col-12 col-sm-6">
-              <div class="info-block p-4 rounded-4">
-                <span class="detail-label">Director</span>
-                <p class="mb-0 detail-value">{{ movie.director }}</p>
-              </div>
-            </div>
-            <div class="col-12 col-sm-6">
-              <div class="info-block p-4 rounded-4">
-                <span class="detail-label">Cast</span>
-                <p class="mb-0 detail-value">{{ movie.cast }}</p>
-              </div>
-            </div>
+          <div class="info-block p-4 rounded-4">
+            <span class="detail-label">Movie Overview</span>
+            <p class="mb-0 detail-value">
+              {{ movie.showtimes.length }} scheduled show{{ movie.showtimes.length === 1 ? '' : 's' }} available right now.
+            </p>
           </div>
         </div>
       </div>
@@ -80,6 +82,10 @@
                     Seats</a>
                 </div>
               </div>
+            </div>
+
+            <div *ngIf="movie.showtimes.length === 0" class="text-white-50">
+              No showtimes available for this movie yet.
             </div>
           </div>
         </div>

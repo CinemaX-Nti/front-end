@@ -1,13 +1,12 @@
 <div class="admin-dashboard-container">
-  <!-- Header Section -->
   <div class="dashboard-header">
     <div class="header-titles">
       <h1 class="page-title">Users Management</h1>
-      <p class="page-subtitle">View and manage registered users</p>
+      <p class="page-subtitle">View registered users from the database</p>
     </div>
     <div class="header-actions">
       <div class="search-container">
-        <i class="search-icon">🔍</i>
+        <span class="search-icon" aria-hidden="true">⌕</span>
         <input 
           type="text" 
           class="search-input" 
@@ -19,7 +18,10 @@
     </div>
   </div>
 
-  <!-- Table Section -->
+  <div *ngIf="errorMessage" class="empty-state">
+    {{ errorMessage }}
+  </div>
+
   <div class="table-card">
     <table class="admin-table">
       <thead>
@@ -59,14 +61,11 @@
               {{ user.emailStatus }}
             </span>
           </td>
-          <td class="text-secondary">{{ user.joinedDate }}</td>
+          <td class="text-secondary">{{ user.joinedDate | date:'mediumDate' }}</td>
           <td>
             <div class="action-buttons">
-              <button class="btn-action" title="Toggle Role" (click)="toggleRole(user)">
-                ⚙️
-              </button>
-              <button class="btn-action btn-delete" title="Delete User" (click)="deleteUser(user)">
-                🗑️
+              <button class="btn-action" title="Backend action not available yet" (click)="explainUnavailableActions()">
+                Info
               </button>
             </div>
           </td>

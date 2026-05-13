@@ -1,6 +1,6 @@
 import { Component, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
@@ -16,11 +16,13 @@ import { AuthService } from '../services/auth.service';
 export class AuthComponent implements OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private readonly destroy$ = new Subject<void>();
 
   // View toggles
   isLoginView = true;
   isForgotPasswordView = false;
+  isConfirmEmailView = false;
   resetStep: 1 | 2 | 3 = 1;
   days = Array.from({ length: 31 }, (_, i) => i + 1);
   months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -51,6 +53,7 @@ export class AuthComponent implements OnDestroy {
   resendTimer = 0;
   authMessage = '';
   authMessageType: 'success' | 'error' = 'success';
+  readonly otpIndexes = [0, 1, 2, 3, 4, 5];
   private resetEmail = '';
   private timerInterval: any;
 
@@ -89,6 +92,11 @@ export class AuthComponent implements OnDestroy {
     confirmNewPassword: new FormControl('', [Validators.required])
   }, { validators: this.passwordMatchValidator });
 
+  confirmEmailForm = new FormGroup({
+    email: new FormControl('', [Validators.required, Validators.email]),
+    otp: new FormControl('', [Validators.required, Validators.minLength(4), Validators.maxLength(6)]),
+  });
+
   // Password match validator
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password') || control.get('newPassword');
@@ -106,6 +114,7 @@ export class AuthComponent implements OnDestroy {
     const target = this.isLoginView ? '/sign-up' : '/sign-in';
     this.router.navigate([target]);
     this.isForgotPasswordView = false;
+    this.isConfirmEmailView = false;
     this.resetStep = 1;
   }
 
@@ -121,10 +130,18 @@ export class AuthComponent implements OnDestroy {
 
   private setAuthViewFromUrl(): void {
     const url = this.router.url;
-    if (url.startsWith('/sign-up')) {
+    if (url.startsWith('/confirm-email')) {
+      this.isConfirmEmailView = true;
+      this.isLoginView = false;
+      this.isForgotPasswordView = false;
+      const email = this.route.snapshot.queryParamMap.get('email') ?? '';
+      this.confirmEmailForm.patchValue({ email });
+    } else if (url.startsWith('/sign-up')) {
+      this.isConfirmEmailView = false;
       this.isLoginView = false;
       this.isForgotPasswordView = false;
     } else {
+      this.isConfirmEmailView = false;
       this.isLoginView = true;
       this.isForgotPasswordView = false;
     }
@@ -142,6 +159,7 @@ export class AuthComponent implements OnDestroy {
   backToLogin(): void {
     this.router.navigate(['/sign-in']);
     this.isForgotPasswordView = false;
+    this.isConfirmEmailView = false;
     this.resetStep = 1;
     this.stopResendTimer();
   }
@@ -183,7 +201,10 @@ export class AuthComponent implements OnDestroy {
           next: (response) => {
             this.isLoading = false;
             this.setMessage(response.message || 'Account created successfully.', 'success');
-            this.router.navigate(['/sign-in']);
+            const email = this.registerForm.value.email ?? '';
+            this.router.navigate(['/confirm-email'], { queryParams: { email } });
+            this.confirmEmailForm.patchValue({ email, otp: '' });
+            this.startResendTimer();
             this.registerForm.reset();
           },
           error: (error) => {
@@ -269,6 +290,93 @@ export class AuthComponent implements OnDestroy {
         this.setMessage(error?.error?.message || 'Could not resend verification code.', 'error');
       }
     });
+  }
+
+  confirmEmail(): void {
+    if (!this.confirmEmailForm.valid) {
+      this.confirmEmailForm.markAllAsTouched();
+      return;
+    }
+
+    this.isLoading = true;
+    this.clearMessage();
+    this.authService.confirmEmail({
+      email: this.confirmEmailForm.value.email ?? '',
+      otp: this.confirmEmailForm.value.otp ?? '',
+    }).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.stopResendTimer();
+        this.setMessage(response.message || 'Email confirmed successfully.', 'success');
+        this.router.navigate(['/sign-in']);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.setMessage(error?.error?.message || 'Email confirmation failed.', 'error');
+      }
+    });
+  }
+
+  resendConfirmationCode(): void {
+    if (this.resendTimer > 0) return;
+    if (!this.confirmEmailForm.value.email) {
+      this.setMessage('Email is required to resend the confirmation code.', 'error');
+      return;
+    }
+
+    this.isResendLoading = true;
+    this.clearMessage();
+    this.authService.resendConfirmationOtp(this.confirmEmailForm.value.email).subscribe({
+      next: (response) => {
+        this.isResendLoading = false;
+        this.startResendTimer();
+        this.setMessage(response.message || 'Confirmation code resent.', 'success');
+      },
+      error: (error) => {
+        this.isResendLoading = false;
+        this.setMessage(error?.error?.message || 'Could not resend confirmation code.', 'error');
+      }
+    });
+  }
+
+  onOtpBoxInput(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '').slice(-1);
+    const otpChars = this.confirmOtpSlots();
+    otpChars[index] = value;
+    this.confirmEmailForm.patchValue({ otp: otpChars.join('') }, { emitEvent: false });
+    input.value = value;
+
+    if (value && input.nextElementSibling instanceof HTMLInputElement) {
+      input.nextElementSibling.focus();
+      input.nextElementSibling.select();
+    }
+  }
+
+  onOtpBoxKeydown(event: KeyboardEvent, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const otpChars = this.confirmOtpSlots();
+
+    if (event.key === 'Backspace' && !input.value && index > 0) {
+      const previous = input.previousElementSibling;
+      if (previous instanceof HTMLInputElement) {
+        otpChars[index - 1] = '';
+        this.confirmEmailForm.patchValue({ otp: otpChars.join('') }, { emitEvent: false });
+        previous.focus();
+        previous.value = '';
+      }
+    }
+  }
+
+  onOtpPaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    const pastedValue = event.clipboardData?.getData('text')?.replace(/\D/g, '').slice(0, 6) ?? '';
+    this.confirmEmailForm.patchValue({ otp: pastedValue }, { emitEvent: false });
+  }
+
+  confirmOtpSlots(): string[] {
+    const otp = this.confirmEmailForm.value.otp ?? '';
+    return Array.from({ length: 6 }, (_, index) => otp[index] ?? '');
   }
 
   private startResendTimer(): void {

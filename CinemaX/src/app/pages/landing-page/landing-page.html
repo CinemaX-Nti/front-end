@@ -7,8 +7,11 @@
     </h1>
     <p class="lead text-white mb-4">Book tickets, reserve premium seats, and order snacks all in one place</p>
     <div class="d-flex gap-3 justify-content-center flex-wrap">
-      <a routerLink="/movies" class="btn btn-danger fw-bold px-4 py-3">Browse Movies</a>
-      <a routerLink="/sign-up" class="btn btn-outline-light fw-bold px-4 py-3">Create Account</a>
+      <a [routerLink]="isAdmin ? '/admin' : '/movies'" class="btn btn-danger fw-bold px-4 py-3">
+        {{ isAdmin ? 'Open Dashboard' : 'Browse Movies' }}
+      </a>
+      <a *ngIf="!isAuthenticated" routerLink="/sign-up" class="btn btn-outline-light fw-bold px-4 py-3">Create Account</a>
+      <a *ngIf="isAuthenticated && !isAdmin" routerLink="/movies" class="btn btn-outline-light fw-bold px-4 py-3">Continue Browsing</a>
     </div>
   </div>
 </section>

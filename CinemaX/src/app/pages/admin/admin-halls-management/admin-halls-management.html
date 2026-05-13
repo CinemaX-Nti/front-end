@@ -1,0 +1,75 @@
+<section class="admin-page">
+  <div class="admin-page__header">
+    <div>
+      <p class="admin-page__eyebrow">CinemaX Admin</p>
+      <h1>Hall Management</h1>
+      <p>Configure cinema halls and seat layouts.</p>
+    </div>
+    <a routerLink="/admin" class="admin-page__back">Back to Dashboard</a>
+  </div>
+
+  <div *ngIf="feedbackMessage" class="admin-page__feedback" [class.is-error]="feedbackTone === 'error'">
+    {{ feedbackMessage }}
+  </div>
+
+  <div class="admin-page__grid">
+    <form class="editor-card" (ngSubmit)="submitHall()">
+      <h2>Add Hall</h2>
+      <label>
+        Hall Template
+        <select name="template" [(ngModel)]="hallForm.template" (ngModelChange)="applyHallTemplate($event)">
+          <option *ngFor="let template of hallTemplates" [value]="template.label">{{ template.label }}</option>
+        </select>
+      </label>
+      <label>
+        Hall Name
+        <input type="text" name="name" [(ngModel)]="hallForm.name" />
+      </label>
+      <div class="editor-card__row">
+        <label>
+          Rows
+          <input type="number" name="rows" [(ngModel)]="hallForm.rows" />
+        </label>
+        <label>
+          Columns
+          <input type="number" name="cols" [(ngModel)]="hallForm.cols" />
+        </label>
+      </div>
+      <label>
+        Standard Rows
+        <input type="text" name="standardRows" [(ngModel)]="hallForm.standardRows" />
+      </label>
+      <label>
+        Premium Rows
+        <input type="text" name="premiumRows" [(ngModel)]="hallForm.premiumRows" />
+      </label>
+      <label>
+        VIP Rows
+        <input type="text" name="vipRows" [(ngModel)]="hallForm.vipRows" />
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" name="availability" [(ngModel)]="hallForm.availability" />
+        Hall is available
+      </label>
+      <button type="submit" class="primary-button" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Saving...' : 'Create Hall' }}
+      </button>
+    </form>
+
+    <div class="listing-card">
+      <div class="listing-card__header">
+        <h2>Active Halls</h2>
+        <span>{{ halls.length }} items</span>
+      </div>
+      <div *ngIf="isLoading" class="empty-state">Loading halls...</div>
+      <div *ngIf="!isLoading && halls.length === 0" class="empty-state">No halls found yet.</div>
+      <div *ngFor="let hall of halls; trackBy: trackById" class="list-item">
+        <div>
+          <strong>{{ hall.name }}</strong>
+          <p>{{ hall.rows }} rows · {{ hall.cols }} seats per row</p>
+        </div>
+        <button type="button" class="secondary-button" (click)="deleteHall(hall)">Delete</button>
+      </div>
+    </div>
+  </div>
+</section>

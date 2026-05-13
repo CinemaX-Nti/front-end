@@ -1,9 +1,8 @@
 <div class="admin-dashboard-container">
-  <!-- Header Section -->
   <div class="dashboard-header">
     <div class="header-titles">
       <h1 class="page-title">Menu Management</h1>
-      <p class="page-subtitle">Manage snacks, beverages, and combos</p>
+      <p class="page-subtitle">Manage snacks, beverages, and combos from the backend</p>
     </div>
     <div class="header-actions">
       <button class="btn-primary-add" (click)="openAddModal()">
@@ -12,14 +11,17 @@
     </div>
   </div>
 
-  <!-- Filters Section -->
+  <div *ngIf="errorMessage" class="empty-state">
+    <p>{{ errorMessage }}</p>
+  </div>
+
   <div class="filters-bar">
     <div class="search-container">
-      <i class="search-icon">🔍</i>
+      <span class="search-icon" aria-hidden="true">⌕</span>
       <input 
         type="text" 
         class="search-input" 
-        placeholder="Search menu items..." 
+        [placeholder]="searchPlaceholder"
         [(ngModel)]="searchQuery"
         (input)="applyFilters()"
       >
@@ -33,17 +35,16 @@
     </div>
   </div>
 
-  <!-- Grid Section -->
   <div class="menu-grid">
     <div class="menu-card" *ngFor="let item of filteredItems" [class.unavailable]="!item.isAvailable">
       <div class="menu-card-header">
         <span class="category-tag" [ngClass]="'tag-' + item.category.toLowerCase()">{{ item.category }}</span>
         <div class="card-actions">
           <button class="btn-icon" (click)="toggleAvailability(item)" title="Toggle Availability">
-            {{ item.isAvailable ? '👁️' : '🚫' }}
+            {{ item.isAvailable ? 'On' : 'Off' }}
           </button>
           <button class="btn-icon delete" (click)="deleteItem(item)" title="Delete Item">
-            🗑️
+            Del
           </button>
         </div>
       </div>
@@ -63,16 +64,15 @@
     </div>
     
     <div class="empty-state" *ngIf="filteredItems.length === 0">
-      <p>No menu items found matching your filters.</p>
+      <p>{{ menuItems.length === 0 ? 'No menu items are saved in the database yet.' : 'No menu items found matching your filters.' }}</p>
     </div>
   </div>
 
-  <!-- Add Menu Item Modal -->
   <div class="modal-overlay" *ngIf="isAddModalOpen" (click)="closeAddModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Add New Menu Item</h2>
-        <button class="btn-close" (click)="closeAddModal()">✕</button>
+        <button class="btn-close" (click)="closeAddModal()">X</button>
       </div>
       
       <div class="modal-body">

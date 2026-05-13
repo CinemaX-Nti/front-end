@@ -162,6 +162,14 @@ export class AuthService {
     return this.http.post<BasicResponse>(`${this.apiUrl}/reset-password`, payload);
   }
 
+  confirmEmail(payload: { email: string; otp: string }): Observable<BasicResponse> {
+    return this.http.post<BasicResponse>(`${this.apiUrl}/confirm-email`, payload);
+  }
+
+  resendConfirmationOtp(email: string): Observable<BasicResponse> {
+    return this.http.post<BasicResponse>(`${this.apiUrl}/resend-confirmation-otp`, { email });
+  }
+
   /**
    * Send Google user data to backend
    */
@@ -193,7 +201,7 @@ export class AuthService {
 
       console.log('Login successful:', user);
 
-      this.router.navigate([user.role === 'admin' ? '/admin' : '/movies']);
+      this.router.navigate([user.role === 'admin' ? '/admin' : '/']);
     }
   }
 
