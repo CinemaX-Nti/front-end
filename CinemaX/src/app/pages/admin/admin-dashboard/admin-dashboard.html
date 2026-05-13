@@ -1,0 +1,81 @@
+<section class="admin-dashboard">
+  <div class="admin-dashboard__hero">
+    <div>
+      <p class="admin-dashboard__eyebrow">CinemaX Admin Console</p>
+      <h1>Dashboard</h1>
+      <p class="admin-dashboard__subtitle">
+        Backend-connected workspace for the admin-only operations already handled by the CinemaX API.
+      </p>
+    </div>
+
+    <div class="admin-dashboard__hero-actions">
+      <a *ngFor="let link of dashboardLinks" [routerLink]="link.route">{{ link.label }}</a>
+    </div>
+  </div>
+
+  <section class="admin-dashboard__command-bar">
+    <a
+      *ngFor="let link of dashboardLinks"
+      class="command-card"
+      [class]="'command-card command-card--' + link.accent"
+      [routerLink]="link.route"
+    >
+      <span class="command-card__icon">{{ link.icon }}</span>
+      <span class="command-card__label">{{ link.label }}</span>
+      <strong class="command-card__action">{{ link.action }}</strong>
+      <small class="command-card__meta">{{ sectionCount(link.section) }} items</small>
+    </a>
+  </section>
+
+  <div *ngIf="feedbackMessage" class="admin-dashboard__feedback" [class.is-error]="feedbackTone === 'error'">
+    {{ feedbackMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="admin-dashboard__loading">
+    Loading CinemaX admin data...
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+    <div class="admin-dashboard__stats">
+      <article *ngFor="let stat of stats" class="stat-card" [class]="'stat-card stat-card--' + stat.accent">
+        <span class="stat-card__label">{{ stat.label }}</span>
+        <strong class="stat-card__value">{{ stat.value }}</strong>
+      </article>
+    </div>
+
+    <div class="admin-dashboard__top-grid">
+      <section class="panel panel--payments">
+        <div class="panel__header">
+          <div>
+            <h2>Pending Payment Reviews</h2>
+            <p>Approve wallet-transfer bookings before their hold expires.</p>
+          </div>
+          <a routerLink="/admin/bookings">Open bookings page</a>
+        </div>
+
+        <div *ngIf="pendingPayments.length === 0" class="empty-state">
+          No bookings are waiting for admin approval right now.
+        </div>
+
+        <div *ngFor="let booking of pendingPayments; trackBy: trackById" class="payment-card">
+          <div>
+            <h3>{{ booking.filmName }}</h3>
+            <p>{{ booking.customerName }} &middot; {{ booking.customerEmail }}</p>
+            <p>{{ booking.hallName }} &middot; {{ formatDate(booking.showtime) }}</p>
+            <p>Seats: {{ booking.seats.join(', ') }}</p>
+            <p>Reference: {{ booking.paymentReference }}</p>
+          </div>
+
+          <div class="payment-card__side">
+            <strong>{{ formatMoney(booking.totalAmount) }}</strong>
+            <span>Expires {{ formatDate(booking.expiresAt) }}</span>
+            <button type="button" class="action-button action-button--primary" (click)="approvePayment(booking)">
+              Approve payment
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </ng-container>
+</section>

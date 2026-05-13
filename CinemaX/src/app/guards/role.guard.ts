@@ -6,12 +6,14 @@ export function roleGuard(expectedRole: string): CanActivateFn {
   return (): boolean | UrlTree => {
     const authService = inject(AuthService);
     const router = inject(Router);
-    const currentRole = authService.currentUserValue?.role;
+    const storedUser = localStorage.getItem('user');
+    const parsedStoredUser = storedUser ? JSON.parse(storedUser) as { role?: string } : null;
+    const currentRole = (authService.currentUserValue?.role ?? parsedStoredUser?.role ?? '').toLowerCase();
 
-    if (currentRole === expectedRole) {
+    if (currentRole === expectedRole.toLowerCase()) {
       return true;
     }
 
-    return router.createUrlTree([currentRole === 'admin' ? '/admin' : '/movies']);
+    return router.createUrlTree([currentRole === 'admin' ? '/admin' : '/']);
   };
 }

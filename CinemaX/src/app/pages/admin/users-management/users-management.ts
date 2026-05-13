@@ -16,15 +16,22 @@ export class UsersManagementPage implements OnInit {
   users: AdminUser[] = [];
   filteredUsers: AdminUser[] = [];
   searchQuery: string = '';
+  errorMessage: string = '';
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
   loadUsers(): void {
-    this.userService.getUsers().subscribe(data => {
-      this.users = data;
-      this.filteredUsers = data;
+    this.errorMessage = '';
+    this.userService.getUsers().subscribe({
+      next: (data) => {
+        this.users = data;
+        this.filteredUsers = data;
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to load users from the backend.';
+      }
     });
   }
 
@@ -35,30 +42,14 @@ export class UsersManagementPage implements OnInit {
     }
     
     const query = this.searchQuery.toLowerCase();
-    this.filteredUsers = this.users.filter(u => 
-      u.name.toLowerCase().includes(query) || 
-      u.email.toLowerCase().includes(query) ||
-      u.phone.includes(query)
+    this.filteredUsers = this.users.filter((user) => 
+      user.name.toLowerCase().includes(query) || 
+      user.email.toLowerCase().includes(query) ||
+      user.phone.toLowerCase().includes(query)
     );
   }
 
-  toggleRole(user: AdminUser): void {
-    const newRole = user.role === 'ADMIN' ? 'CUSTOMER' : 'ADMIN';
-    this.userService.updateUserRole(user.id, newRole).subscribe(success => {
-      if (success) {
-        user.role = newRole;
-      }
-    });
-  }
-
-  deleteUser(user: AdminUser): void {
-    if (confirm(`Are you sure you want to delete ${user.name}?`)) {
-      this.userService.deleteUser(user.id).subscribe(success => {
-        if (success) {
-          this.loadUsers();
-        }
-      });
-    }
+  explainUnavailableActions(): void {
+    this.errorMessage = 'The backend currently exposes a read-only admin users list. Role change and delete endpoints are not implemented yet.';
   }
 }
-

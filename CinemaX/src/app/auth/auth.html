@@ -3,16 +3,73 @@
     <div class="row justify-content-center align-items-center min-vh-100">
       <div class="col-12 col-md-8 col-lg-6 col-xl-5">
         <div class="auth-card">
-          <div class="auth-header">
+          <div class="auth-header" *ngIf="!isConfirmEmailView">
             <h1 class="auth-title">CinemaX</h1>
             <p class="auth-subtitle">
-              {{ isForgotPasswordView ? 'Reset your password' : (isLoginView ? 'Sign in to continue' : 'Create your
-              account') }}
+              {{ isForgotPasswordView ? 'Reset your password' : (isConfirmEmailView ? 'Confirm your email address' : (isLoginView ? 'Sign in to continue' : 'Create your account')) }}
             </p>
           </div>
 
+          <div *ngIf="authMessage && !isConfirmEmailView" class="auth-message" [class.auth-message--error]="authMessageType === 'error'">
+            {{ authMessage }}
+          </div>
+
+          <form *ngIf="isConfirmEmailView" [formGroup]="confirmEmailForm" (ngSubmit)="confirmEmail()" class="auth-form auth-form--confirm">
+            <div class="confirm-email-card">
+              <div class="confirm-email-card__brand">CinemaX</div>
+
+              <div *ngIf="authMessage" class="auth-message confirm-email-card__message" [class.auth-message--error]="authMessageType === 'error'">
+                {{ authMessage }}
+              </div>
+
+              <h2 class="confirm-email-card__title">Verify Your Email</h2>
+              <p class="confirm-email-card__text">
+                We sent a 6-digit code to
+              </p>
+              <p class="confirm-email-card__email">{{ confirmEmailForm.value.email || 'your email' }}</p>
+
+              <div class="confirm-email-card__field">
+                <input type="email" class="confirm-email-card__hidden-email" formControlName="email" />
+                <div class="otp-visual" (paste)="onOtpPaste($event)">
+                  <input
+                    *ngFor="let index of otpIndexes; let first = first"
+                    [id]="first ? 'confirm-otp' : null"
+                    class="otp-visual__slot"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    maxlength="1"
+                    [value]="confirmOtpSlots()[index]"
+                    (input)="onOtpBoxInput($event, index)"
+                    (keydown)="onOtpBoxKeydown($event, index)"
+                  />
+                </div>
+                <div class="invalid-feedback d-block text-center" *ngIf="confirmEmailForm.get('otp')?.invalid && confirmEmailForm.get('otp')?.touched">
+                  Please enter the 4-6 digit confirmation code.
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-auth confirm-email-card__submit" [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isLoading ? 'Verifying...' : 'Verify Code' }}
+              </button>
+
+              <p class="confirm-email-card__hint">Didn't receive the code?</p>
+
+              <button type="button" class="confirm-email-card__resend" (click)="resendConfirmationCode()"
+                [disabled]="resendTimer > 0 || isResendLoading">
+                <span *ngIf="isResendLoading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ resendTimer > 0 ? 'Resend in ' + resendTimer + 's' : 'Resend Code' }}
+              </button>
+
+              <button type="button" class="confirm-email-card__back" (click)="toggleView()">
+                Back to Sign Up
+              </button>
+            </div>
+          </form>
+
           <!-- Login Form -->
-          <form *ngIf="isLoginView && !isForgotPasswordView" [formGroup]="loginForm" (ngSubmit)="onSubmit()"
+          <form *ngIf="isLoginView && !isForgotPasswordView && !isConfirmEmailView" [formGroup]="loginForm" (ngSubmit)="onSubmit()"
             class="auth-form">
             <div class="form-group mb-3">
               <label for="login-email" class="form-label">Email</label>

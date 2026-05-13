@@ -1,0 +1,11 @@
+@import '../admin-movies-management/admin-movies-management.css';
+.editor-card__row--triple { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.badge-pill {
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  background: rgba(127,184,255,0.12);
+  color: #cbe4ff;
+  border: 1px solid rgba(127,184,255,0.18);
+  align-self: center;
+}
+@media (max-width: 768px) { .editor-card__row--triple { grid-template-columns: 1fr; } }

@@ -1,0 +1,102 @@
+<section class="admin-page">
+  <div class="admin-page__header">
+    <div>
+      <p class="admin-page__eyebrow">CinemaX Admin</p>
+      <h1>Movie Management</h1>
+      <p>Create films and manage the active catalog.</p>
+    </div>
+    <a routerLink="/admin" class="admin-page__back">Back to Dashboard</a>
+  </div>
+
+  <div *ngIf="feedbackMessage" class="admin-page__feedback" [class.is-error]="feedbackTone === 'error'">
+    {{ feedbackMessage }}
+  </div>
+
+  <div class="admin-page__grid">
+    <form class="editor-card" (ngSubmit)="submitMovie()">
+      <h2>Add Movie</h2>
+      <label>
+        Title
+        <input type="text" name="title" [(ngModel)]="movieForm.title" />
+      </label>
+      <label>
+        Description
+        <textarea name="description" [(ngModel)]="movieForm.description"></textarea>
+      </label>
+      <div class="editor-card__row">
+        <label>
+          Duration
+          <input type="number" name="duration" [(ngModel)]="movieForm.duration" />
+        </label>
+        <label>
+          Rating
+          <input type="number" min="0" max="10" step="0.1" name="rating" [(ngModel)]="movieForm.rating" />
+        </label>
+      </div>
+      <label>
+        Poster URL
+        <input type="url" name="posterUrl" [(ngModel)]="movieForm.posterUrl" />
+      </label>
+      <div class="editor-card__row">
+        <label>
+          Language
+          <select name="language" [(ngModel)]="movieForm.language">
+            <option *ngFor="let language of languageOptions" [value]="language">{{ language }}</option>
+          </select>
+        </label>
+        <label>
+          Status
+          <select name="status" [(ngModel)]="movieForm.status">
+            <option value="now_showing">Now Showing</option>
+            <option value="coming_soon">Coming Soon</option>
+            <option value="archived">Archived</option>
+          </select>
+        </label>
+      </div>
+      <label>
+        Genres
+        <input type="text" name="genres" [(ngModel)]="movieForm.genreInput" />
+      </label>
+      <div class="chip-grid">
+        <button
+          *ngFor="let genre of movieGenreOptions"
+          type="button"
+          class="chip-button"
+          [class.chip-button--active]="hasGenre(genre)"
+          (click)="toggleGenre(genre)"
+        >
+          {{ genre }}
+        </button>
+      </div>
+      <div class="editor-card__row">
+        <label>
+          Trailer URL
+          <input type="url" name="trailerUrl" [(ngModel)]="movieForm.trailerUrl" />
+        </label>
+        <label>
+          Release Date
+          <input type="date" name="releaseDate" [(ngModel)]="movieForm.releaseDate" />
+        </label>
+      </div>
+      <button type="submit" class="primary-button" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Saving...' : 'Create Movie' }}
+      </button>
+    </form>
+
+    <div class="listing-card">
+      <div class="listing-card__header">
+        <h2>Current Movies</h2>
+        <span>{{ movies.length }} items</span>
+      </div>
+      <div *ngIf="isLoading" class="empty-state">Loading movies...</div>
+      <div *ngIf="!isLoading && movies.length === 0" class="empty-state">No movies found yet.</div>
+      <div *ngFor="let movie of movies; trackBy: trackById" class="list-item">
+        <div>
+          <strong>{{ movie.title }}</strong>
+          <p>{{ movie.genres.join(', ') }} · {{ statusLabel(movie.status) }}</p>
+        </div>
+        <button type="button" class="secondary-button" (click)="deleteMovie(movie)">Delete</button>
+      </div>
+    </div>
+  </div>
+</section>

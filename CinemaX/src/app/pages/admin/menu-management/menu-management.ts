@@ -17,15 +17,23 @@ export class MenuManagementPage implements OnInit {
   filteredItems: MenuItem[] = [];
   searchQuery: string = '';
   selectedCategory: string = 'ALL';
+  errorMessage: string = '';
+  searchPlaceholder = 'Search by item name or description';
 
   ngOnInit(): void {
     this.loadMenuItems();
   }
 
   loadMenuItems(): void {
-    this.menuService.getMenuItems().subscribe(data => {
-      this.menuItems = data;
-      this.applyFilters();
+    this.errorMessage = '';
+    this.menuService.getMenuItems().subscribe({
+      next: (data) => {
+        this.menuItems = data;
+        this.applyFilters();
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to load menu items from the backend.';
+      }
     });
   }
 
@@ -33,12 +41,12 @@ export class MenuManagementPage implements OnInit {
     let filtered = this.menuItems;
 
     if (this.selectedCategory !== 'ALL') {
-      filtered = filtered.filter(item => item.category === this.selectedCategory);
+      filtered = filtered.filter((item) => item.category === this.selectedCategory);
     }
 
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter((item) => 
         item.name.toLowerCase().includes(query) || 
         item.description.toLowerCase().includes(query)
       );
@@ -53,24 +61,33 @@ export class MenuManagementPage implements OnInit {
   }
 
   toggleAvailability(item: MenuItem): void {
-    this.menuService.toggleAvailability(item.id).subscribe(success => {
-      if (success) {
-        item.isAvailable = !item.isAvailable;
+    this.menuService.toggleAvailability(item).subscribe({
+      next: (updatedItem) => {
+        const targetItem = this.menuItems.find((menuItem) => menuItem.id === updatedItem.id);
+        if (targetItem) {
+          targetItem.isAvailable = updatedItem.isAvailable;
+        }
+        this.applyFilters();
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to update menu item availability.';
       }
     });
   }
 
   deleteItem(item: MenuItem): void {
     if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-      this.menuService.deleteItem(item.id).subscribe(success => {
-        if (success) {
+      this.menuService.deleteItem(item.id).subscribe({
+        next: () => {
           this.loadMenuItems();
+        },
+        error: (error) => {
+          this.errorMessage = error?.error?.message || 'Failed to delete menu item.';
         }
       });
     }
   }
 
-  // Add Menu Item Modal Logic
   isAddModalOpen = false;
   newItem: Omit<MenuItem, 'id'> = {
     name: '',
@@ -100,11 +117,18 @@ export class MenuManagementPage implements OnInit {
       alert('Please fill all required fields correctly.');
       return;
     }
-    
-    this.menuService.addItem(this.newItem).subscribe(() => {
-      this.closeAddModal();
-      this.loadMenuItems();
+
+    this.errorMessage = '';
+    this.menuService.addItem(this.newItem).subscribe({
+      next: () => {
+        this.closeAddModal();
+        this.searchQuery = '';
+        this.selectedCategory = 'ALL';
+        this.loadMenuItems();
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to add menu item.';
+      }
     });
   }
 }
-

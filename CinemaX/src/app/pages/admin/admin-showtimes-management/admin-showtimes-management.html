@@ -1,0 +1,85 @@
+<section class="admin-page">
+  <div class="admin-page__header">
+    <div>
+      <p class="admin-page__eyebrow">CinemaX Admin</p>
+      <h1>Showtime Management</h1>
+      <p>Schedule screenings and control pricing tiers.</p>
+    </div>
+    <a routerLink="/admin" class="admin-page__back">Back to Dashboard</a>
+  </div>
+
+  <div *ngIf="feedbackMessage" class="admin-page__feedback" [class.is-error]="feedbackTone === 'error'">
+    {{ feedbackMessage }}
+  </div>
+
+  <div class="admin-page__grid">
+    <form class="editor-card" (ngSubmit)="submitShowtime()">
+      <h2>Schedule Showtime</h2>
+      <div class="editor-card__row">
+        <label>
+          Movie
+          <select name="movieId" [(ngModel)]="showtimeForm.movieId">
+            <option *ngFor="let movie of movies; trackBy: trackById" [value]="movie.id">{{ movie.title }}</option>
+          </select>
+        </label>
+        <label>
+          Hall
+          <select name="hallId" [(ngModel)]="showtimeForm.hallId">
+            <option *ngFor="let hall of halls; trackBy: trackById" [value]="hall.id">{{ hall.name }}</option>
+          </select>
+        </label>
+      </div>
+      <div class="editor-card__row">
+        <label>
+          Start Time
+          <input type="datetime-local" name="startTime" [(ngModel)]="showtimeForm.startTime" />
+        </label>
+        <label>
+          End Time
+          <input type="datetime-local" name="endTime" [(ngModel)]="showtimeForm.endTime" />
+        </label>
+      </div>
+      <label>
+        Format
+        <select name="format" [(ngModel)]="showtimeForm.format">
+          <option value="2D">2D</option>
+          <option value="3D">3D</option>
+          <option value="IMAX">IMAX</option>
+        </select>
+      </label>
+      <div class="editor-card__row editor-card__row--triple">
+        <label>
+          Standard Price
+          <input type="number" name="standardPrice" [(ngModel)]="showtimeForm.standardPrice" />
+        </label>
+        <label>
+          Premium Price
+          <input type="number" name="premiumPrice" [(ngModel)]="showtimeForm.premiumPrice" />
+        </label>
+        <label>
+          VIP Price
+          <input type="number" name="vipPrice" [(ngModel)]="showtimeForm.vipPrice" />
+        </label>
+      </div>
+      <button type="submit" class="primary-button" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Saving...' : 'Schedule Showtime' }}
+      </button>
+    </form>
+
+    <div class="listing-card">
+      <div class="listing-card__header">
+        <h2>Upcoming Showtimes</h2>
+        <span>{{ showtimes.length }} items</span>
+      </div>
+      <div *ngIf="isLoading" class="empty-state">Loading showtimes...</div>
+      <div *ngIf="!isLoading && showtimes.length === 0" class="empty-state">No showtimes found yet.</div>
+      <div *ngFor="let showtime of showtimes; trackBy: trackById" class="list-item">
+        <div>
+          <strong>{{ showtime.movieTitle }}</strong>
+          <p>{{ showtime.hallName }} · {{ formatDate(showtime.startTime) }} · {{ statusLabel(showtime.status) }}</p>
+        </div>
+        <span class="badge-pill">{{ showtime.format }}</span>
+      </div>
+    </div>
+  </div>
+</section>
