@@ -14,7 +14,10 @@
 
   <div class="admin-page__grid">
     <form class="editor-card" (ngSubmit)="submitMovie()">
-      <h2>Add Movie</h2>
+      <div class="editor-card__title-row">
+        <h2>{{ editingMovieId ? 'Edit Movie' : 'Add Movie' }}</h2>
+        <button *ngIf="editingMovieId" type="button" class="ghost-button" (click)="cancelEdit()">Cancel</button>
+      </div>
       <label>
         Title
         <input type="text" name="title" [(ngModel)]="movieForm.title" />
@@ -79,7 +82,7 @@
         </label>
       </div>
       <button type="submit" class="primary-button" [disabled]="isSubmitting">
-        {{ isSubmitting ? 'Saving...' : 'Create Movie' }}
+        {{ isSubmitting ? 'Saving...' : (editingMovieId ? 'Update Movie' : 'Create Movie') }}
       </button>
     </form>
 
@@ -95,7 +98,10 @@
           <strong>{{ movie.title }}</strong>
           <p>{{ movie.genres.join(', ') }} · {{ statusLabel(movie.status) }}</p>
         </div>
-        <button type="button" class="secondary-button" (click)="deleteMovie(movie)">Delete</button>
+        <div class="list-item__actions">
+          <button type="button" class="secondary-button" (click)="editMovie(movie)">Edit</button>
+          <button type="button" class="secondary-button secondary-button--danger" (click)="deleteMovie(movie)">Delete</button>
+        </div>
       </div>
     </div>
   </div>

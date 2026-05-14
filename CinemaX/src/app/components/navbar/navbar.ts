@@ -16,11 +16,15 @@ export class Navbar {
   protected isMenuOpen = false;
 
   protected get isAuthenticated(): boolean {
-    return this.authService.isAuthenticated();
+    const auth = this.authService.isAuthenticated();
+    console.log('Navbar isAuthenticated:', auth);
+    return auth;
   }
 
   protected get isAdmin(): boolean {
-    return this.authService.currentUserValue?.role === 'admin';
+    const admin = this.authService.currentUserValue?.role === 'admin';
+    console.log('Navbar isAdmin:', admin, 'User:', this.authService.currentUserValue);
+    return admin;
   }
 
   protected toggleMenu(): void {

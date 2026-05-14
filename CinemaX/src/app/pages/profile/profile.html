@@ -1,0 +1,165 @@
+<section class="profile-page">
+  <div class="profile-container">
+    <div class="profile-header">
+      <h1>My Profile</h1>
+      <p>Manage your account information and preferences</p>
+    </div>
+
+    <div *ngIf="feedbackMessage" class="profile-feedback" [class.is-error]="feedbackTone === 'error'">
+      {{ feedbackMessage }}
+    </div>
+
+    <div *ngIf="isLoading" class="profile-loading">
+      Loading profile...
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+      <div *ngIf="!user" class="profile-error">
+        <h2>Access Denied</h2>
+        <p>You need to be logged in to view your profile.</p>
+        <a routerLink="/sign-in" class="btn btn-primary">Sign In</a>
+      </div>
+
+      <div *ngIf="user" class="profile-card">
+        <div class="profile-card__header">
+          <div class="profile-avatar">
+            <i class="bi bi-person-circle"></i>
+          </div>
+          <div class="profile-info">
+            <h2>{{ user.name }}</h2>
+            <p>{{ user.email }}</p>
+            <span class="profile-role" [class.admin]="user.role === 'admin'">
+              {{ user.role === 'admin' ? 'Administrator' : 'Customer' }}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="profile-edit-btn"
+            (click)="toggleEdit()"
+            [disabled]="isSubmitting"
+          >
+            <i class="bi" [class]="isEditing ? 'bi-x' : 'bi-pencil'"></i>
+            {{ isEditing ? 'Cancel' : 'Edit Profile' }}
+          </button>
+        </div>
+
+        <div class="profile-card__content">
+          <ng-container *ngIf="!isEditing">
+            <!-- View Mode -->
+            <div class="profile-field">
+              <label>Full Name</label>
+              <p>{{ user.name }}</p>
+            </div>
+
+            <div class="profile-field">
+              <label>Email Address</label>
+              <p>{{ user.email }}</p>
+            </div>
+
+            <div class="profile-field">
+              <label>Phone Number</label>
+              <p>{{ user.phoneNumber || 'Not provided' }}</p>
+            </div>
+
+            <div class="profile-field">
+              <label>Date of Birth</label>
+              <p>{{ formatDate(user.dateOfBirth) }}</p>
+            </div>
+
+            <div class="profile-field">
+              <label>Account Type</label>
+              <p>{{ user.provider === 'google' ? 'Google Account' : 'Local Account' }}</p>
+            </div>
+
+            <div class="profile-field">
+              <label>Member Since</label>
+              <p>{{ formatDate(user.createdAt) }}</p>
+            </div>
+
+            <div class="profile-field">
+              <label>Email Verified</label>
+              <p>
+                <i class="bi" [class]="user.confirmed ? 'bi-check-circle text-success' : 'bi-x-circle text-danger'"></i>
+                {{ user.confirmed ? 'Verified' : 'Not verified' }}
+              </p>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="isEditing">
+            <!-- Edit Mode -->
+            <form class="profile-form" (ngSubmit)="saveProfile()">
+              <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input
+                  type="text"
+                  id="name"
+                  [(ngModel)]="profileForm.name"
+                  name="name"
+                  required
+                  class="form-control"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  [(ngModel)]="profileForm.email"
+                  name="email"
+                  readonly
+                  class="form-control"
+                  title="Email cannot be changed"
+                />
+                <small class="form-text">Email address cannot be modified</small>
+              </div>
+
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  [(ngModel)]="profileForm.phoneNumber"
+                  name="phone"
+                  class="form-control"
+                  placeholder="Enter your phone number"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="dob">Date of Birth</label>
+                <input
+                  type="date"
+                  id="dob"
+                  [(ngModel)]="profileForm.dateOfBirth"
+                  name="dob"
+                  class="form-control"
+                />
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  (click)="toggleEdit()"
+                  [disabled]="isSubmitting"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  [disabled]="isSubmitting"
+                >
+                  <span *ngIf="isSubmitting">Saving...</span>
+                  <span *ngIf="!isSubmitting">Save Changes</span>
+                </button>
+              </div>
+            </form>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</section>

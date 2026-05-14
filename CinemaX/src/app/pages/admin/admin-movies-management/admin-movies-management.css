@@ -39,6 +39,13 @@
 .admin-page__grid { display: grid; gap: 1.25rem; grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.05fr); }
 .editor-card, .listing-card { padding: 1.25rem; }
 .editor-card { display: grid; gap: 0.95rem; }
+.editor-card__title-row,
+.list-item__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
 .editor-card label { display: grid; gap: 0.45rem; color: #dbe5f2; }
 .editor-card input, .editor-card textarea, .editor-card select {
   width: 100%;
@@ -67,6 +74,14 @@
   padding: 0.85rem 1rem;
   cursor: pointer;
 }
+.ghost-button {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  background: transparent;
+  color: #dbe5f2;
+  cursor: pointer;
+}
 .listing-card__header, .list-item { display: flex; justify-content: space-between; gap: 1rem; }
 .listing-card__header { margin-bottom: 1rem; align-items: center; }
 .listing-card__header span, .list-item p { color: #96a3ba; }
@@ -77,10 +92,16 @@
 }
 .empty-state { color: #96a3ba; padding: 1rem 0; }
 .secondary-button { padding: 0.7rem 1rem; }
+.secondary-button--danger {
+  border-color: rgba(255,80,80,0.22);
+  color: #ffd2d2;
+}
 @media (max-width: 1100px) { .admin-page__grid { grid-template-columns: 1fr; } }
 @media (max-width: 768px) {
   .admin-page { padding: 1rem; }
   .admin-page__header { flex-direction: column; }
   .editor-card__row { grid-template-columns: 1fr; }
   .list-item { flex-direction: column; align-items: flex-start; }
+  .editor-card__title-row,
+  .list-item__actions { width: 100%; }
 }

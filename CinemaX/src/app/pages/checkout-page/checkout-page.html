@@ -99,10 +99,57 @@
           <strong>${{ total }}</strong>
         </div>
 
-        <button type="button" class="confirm-button">
+        <label class="payment-field" for="paymentReference">
+          <span>Payment Reference</span>
+          <input
+            id="paymentReference"
+            type="text"
+            [(ngModel)]="paymentReference"
+            placeholder="Optional transfer reference"
+            [disabled]="isSubmitting || !!bookingResult"
+          />
+        </label>
+
+        <p *ngIf="feedbackMessage" class="payment-feedback" [class.payment-feedback--error]="feedbackTone === 'error'">
+          {{ feedbackMessage }}
+        </p>
+
+        <button type="button" class="confirm-button" (click)="confirmBooking()" [disabled]="isSubmitting || !!bookingResult">
           <i class="bi bi-check-lg"></i>
-          <span>Confirm Booking</span>
+          <span>{{ isSubmitting ? 'Creating Booking...' : 'Confirm Booking' }}</span>
         </button>
+
+        <div *ngIf="receipt" class="payment-status-card">
+          <div class="line-item">
+            <span>Booking ID</span>
+            <strong>{{ receipt.id }}</strong>
+          </div>
+          <div class="line-item">
+            <span>Status</span>
+            <strong>{{ confirmedReceipt ? 'Waiting Admin Approval' : 'Waiting Transfer' }}</strong>
+          </div>
+          <div class="line-item" *ngIf="receipt.expiresAt">
+            <span>Expires</span>
+            <strong>{{ receipt.expiresAt | date: 'MMM d, y h:mm a' }}</strong>
+          </div>
+          <img *ngIf="receipt.qrCodeDataUrl" class="payment-qr" [src]="receipt.qrCodeDataUrl" alt="Booking QR code" />
+          <div *ngIf="paymentInstructions as instructions" class="payment-instructions">
+            <p *ngIf="instructions.accountName"><strong>Account:</strong> {{ instructions.accountName }}</p>
+            <p *ngIf="instructions.accountNumber"><strong>Number:</strong> {{ instructions.accountNumber }}</p>
+            <p *ngIf="instructions.bankName"><strong>Bank:</strong> {{ instructions.bankName }}</p>
+            <p>{{ instructions.note }}</p>
+            <img *ngIf="instructions.walletQrImageUrl" class="payment-qr payment-qr--wallet" [src]="instructions.walletQrImageUrl" alt="Wallet QR" />
+          </div>
+          <button
+            *ngIf="bookingResult && !confirmedReceipt"
+            type="button"
+            class="confirm-button confirm-button--secondary"
+            (click)="submitForReview()"
+            [disabled]="isSubmittingForReview"
+          >
+            <span>{{ isSubmittingForReview ? 'Submitting...' : 'I Completed the Transfer' }}</span>
+          </button>
+        </div>
 
         <p class="payment-note">By confirming, you agree to our terms and conditions</p>
       </aside>

@@ -93,7 +93,7 @@
           <td>
             <div class="dropdown-container">
               <button *ngIf="booking.canApprovePayment" class="action-select" (click)="approvePayment(booking)">
-                Approve Payment
+                {{ actionLabel(booking) }}
               </button>
               <button *ngIf="!booking.canApprovePayment" class="action-select" (click)="explainUnavailableActions()">
                 View Only

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { IMovie, MOVIE_STATUS_LABELS } from '../../models/movie.model';
 import { MoviesService } from '../../services/movies.service';
+import { AuthService } from '../../services/auth.service';
 import { AppLoadingComponent } from '../../components/app-loading/app-loading';
 import { MovieTrailerModalComponent } from '../../components/movie-trailer-modal/movie-trailer-modal';
 
@@ -29,6 +30,15 @@ interface LandingMovieSection {
 export class LandingPage implements OnInit {
   private readonly router = inject(Router);
   private readonly moviesService = inject(MoviesService);
+  private readonly authService = inject(AuthService);
+
+  protected get isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  protected get isAdmin(): boolean {
+    return this.authService.currentUserValue?.role === 'admin';
+  }
 
   protected readonly features: LandingFeature[] = [
     {

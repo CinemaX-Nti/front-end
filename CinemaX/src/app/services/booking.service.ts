@@ -1,5 +1,9 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 export interface Booking {
   id: string;
@@ -16,41 +20,241 @@ export interface Booking {
   canApprovePayment: boolean;
 }
 
+export interface ShowtimeSeat {
+  id: string;
+  seatNumber: string;
+  status: 'available' | 'reserved' | 'locked' | 'booked';
+  type: 'standard' | 'premium' | 'vip';
+  price: number;
+}
+
+export interface CreateBookingPayload {
+  userId: string;
+  showTimeId: string;
+  seats: string[];
+  foodItems: Array<{
+    itemId: string;
+    quantity: number;
+  }>;
+  paymentReference?: string;
+}
+
+export interface BookingReceipt {
+  id: string;
+  filmName: string;
+  seats: string[];
+  totalAmount: number;
+  ticketTotal: number;
+  foodTotal: number;
+  status: string;
+  paymentStatus: string;
+  paymentReference: string | null;
+  expiresAt: string | null;
+  qrCodeDataUrl: string | null;
+}
+
+export interface BookingInstructions {
+  walletQrImageUrl: string | null;
+  accountName: string | null;
+  accountNumber: string | null;
+  bankName: string | null;
+  note: string;
+}
+
+export interface CreateBookingResult {
+  message: string;
+  booking: BookingReceipt;
+  qrReviewLink: string;
+  paymentInstructions: BookingInstructions;
+  expiresInMinutes: number;
+}
+
+interface BackendSeat {
+  _id: string;
+  seatNumber: string;
+  status: 'available' | 'reserved' | 'locked' | 'booked';
+  type: 'standard' | 'premium' | 'vip';
+  price: number;
+}
+
+interface BackendBooking {
+  _id: string;
+  filmName: string;
+  seats: string[];
+  ticketTotal?: number;
+  foodTotal?: number;
+  totalAmount: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'expired';
+  paymentStatus: 'waiting_transfer' | 'waiting_approval' | 'paid' | 'failed' | 'refunded';
+  paymentReference?: string | null;
+  createdAt?: string;
+  expiresAt?: string | null;
+  qrCodeDataUrl?: string | null;
+  userId?: {
+    name?: string;
+  };
+  hallId?: {
+    name?: string;
+  };
+  showTimeId?: {
+    startTime?: string;
+  };
+}
+
+interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+}
+
+interface CreateBookingResponse {
+  message: string;
+  booking: BackendBooking;
+  qrReviewLink: string;
+  paymentInstructions: BookingInstructions;
+  expiresInMinutes: number;
+}
+
+interface ConfirmBookingResponse {
+  message: string;
+  booking: BackendBooking;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class BookingService {
-  private mockBookings: Booking[] = [
-    { id: 'BKG-1001', customerName: 'Jane Smith', movieName: 'Dune: Part Two', hallName: 'IMAX 1', showtime: '2026-05-14T19:30:00Z', seats: ['J12', 'J13'], totalTickets: 30, totalFood: 15.5, bookingStatus: 'CONFIRMED', paymentStatus: 'PAID', createdAt: '2026-05-11T10:00:00Z', canApprovePayment: false },
-    { id: 'BKG-1002', customerName: 'Mike Johnson', movieName: 'Oppenheimer', hallName: 'Standard 3', showtime: '2026-05-14T20:00:00Z', seats: ['F05'], totalTickets: 12, totalFood: 0, bookingStatus: 'PENDING', paymentStatus: 'WAITING_APPROVAL', createdAt: '2026-05-11T14:30:00Z', canApprovePayment: true },
-    { id: 'BKG-1003', customerName: 'Sarah Williams', movieName: 'Interstellar Re-release', hallName: 'VIP Lounge', showtime: '2026-05-15T18:00:00Z', seats: ['A01', 'A02'], totalTickets: 50, totalFood: 45, bookingStatus: 'PENDING', paymentStatus: 'WAITING_TRANSFER', createdAt: '2026-05-10T09:15:00Z', canApprovePayment: false },
-    { id: 'BKG-1004', customerName: 'David Brown', movieName: 'The Batman', hallName: 'Standard 2', showtime: '2026-05-14T22:30:00Z', seats: ['H08', 'H09', 'H10'], totalTickets: 36, totalFood: 25, bookingStatus: 'CANCELLED', paymentStatus: 'REFUNDED', createdAt: '2026-05-09T16:45:00Z', canApprovePayment: false },
-    { id: 'BKG-1005', customerName: 'Lina Hassan', movieName: 'Mission: Impossible', hallName: 'Standard 5', showtime: '2026-05-13T17:00:00Z', seats: ['C04', 'C05'], totalTickets: 24, totalFood: 8, bookingStatus: 'EXPIRED', paymentStatus: 'FAILED', createdAt: '2026-05-08T12:20:00Z', canApprovePayment: false },
-  ];
-
-  constructor() {}
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   getBookings(): Observable<Booking[]> {
-    return of(this.mockBookings);
+    return this.http
+      .get<PaginatedResponse<BackendBooking>>(`${environment.api.baseUrl}/bookings?limit=100`, this.requestOptions())
+      .pipe(map((response) => (response.data ?? []).map((booking) => this.mapBooking(booking))));
   }
 
-  updateBookingStatus(id: string, status: Booking['bookingStatus']): Observable<boolean> {
-    const booking = this.mockBookings.find(b => b.id === id);
-    if (booking) {
-      booking.bookingStatus = status;
-      return of(true);
-    }
-    return of(false);
+  getSeatsForShowtime(showtimeId: string): Observable<ShowtimeSeat[]> {
+    return this.http
+      .get<BackendSeat[]>(`${environment.api.baseUrl}/showtimes/${showtimeId}/seats`)
+      .pipe(map((response) => (response ?? []).map((seat) => this.mapSeat(seat))));
+  }
+
+  createBooking(payload: CreateBookingPayload): Observable<CreateBookingResult> {
+    return this.http
+      .post<CreateBookingResponse>(`${environment.api.baseUrl}/bookings`, payload, this.requestOptions())
+      .pipe(
+        map((response) => ({
+          message: response.message,
+          booking: this.mapBookingReceipt(response.booking),
+          qrReviewLink: response.qrReviewLink,
+          paymentInstructions: response.paymentInstructions,
+          expiresInMinutes: response.expiresInMinutes,
+        })),
+      );
+  }
+
+  submitBookingForReview(bookingId: string): Observable<{ message: string; booking: BookingReceipt }> {
+    return this.http
+      .get<ConfirmBookingResponse>(`${environment.api.baseUrl}/api/bookings/confirm-scan/${bookingId}`)
+      .pipe(
+        map((response) => ({
+          message: response.message,
+          booking: this.mapBookingReceipt(response.booking),
+        })),
+      );
   }
 
   approvePayment(id: string): Observable<boolean> {
-    const booking = this.mockBookings.find((b) => b.id === id);
-    if (booking) {
-      booking.paymentStatus = 'PAID';
-      booking.bookingStatus = 'CONFIRMED';
-      booking.canApprovePayment = false;
-      return of(true);
+    return this.http
+      .patch<void>(`${environment.api.baseUrl}/admin/approve-payment/${id}`, {}, this.requestOptions())
+      .pipe(map(() => true));
+  }
+
+  private requestOptions(): { headers: HttpHeaders } {
+    return {
+      headers: new HttpHeaders(this.authService.getAuthHeaders()),
+    };
+  }
+
+  private mapSeat(seat: BackendSeat): ShowtimeSeat {
+    return {
+      id: seat._id,
+      seatNumber: seat.seatNumber,
+      status: seat.status,
+      type: seat.type,
+      price: seat.price,
+    };
+  }
+
+  private mapBooking(booking: BackendBooking): Booking {
+    return {
+      id: booking._id,
+      customerName: booking.userId?.name ?? 'You',
+      movieName: booking.filmName,
+      hallName: booking.hallId?.name ?? 'Main Hall',
+      showtime: booking.showTimeId?.startTime ?? booking.createdAt ?? '',
+      seats: booking.seats,
+      totalTickets: booking.ticketTotal ?? 0,
+      totalFood: booking.foodTotal ?? 0,
+      bookingStatus: this.mapBookingStatus(booking.status),
+      paymentStatus: this.mapPaymentStatus(booking.paymentStatus),
+      createdAt: booking.createdAt ?? '',
+      canApprovePayment: booking.status === 'pending' && ['waiting_transfer', 'waiting_approval'].includes(booking.paymentStatus),
+    };
+  }
+
+  private mapBookingReceipt(booking: BackendBooking): BookingReceipt {
+    return {
+      id: booking._id,
+      filmName: booking.filmName,
+      seats: booking.seats,
+      totalAmount: booking.totalAmount,
+      ticketTotal: booking.ticketTotal ?? 0,
+      foodTotal: booking.foodTotal ?? 0,
+      status: booking.status,
+      paymentStatus: booking.paymentStatus,
+      paymentReference: booking.paymentReference ?? null,
+      expiresAt: booking.expiresAt ?? null,
+      qrCodeDataUrl: booking.qrCodeDataUrl ?? null,
+    };
+  }
+
+  private mapBookingStatus(status: BackendBooking['status']): Booking['bookingStatus'] {
+    if (status === 'confirmed') {
+      return 'CONFIRMED';
     }
-    return of(false);
+
+    if (status === 'cancelled') {
+      return 'CANCELLED';
+    }
+
+    if (status === 'expired') {
+      return 'EXPIRED';
+    }
+
+    return 'PENDING';
+  }
+
+  private mapPaymentStatus(status: BackendBooking['paymentStatus']): Booking['paymentStatus'] {
+    if (status === 'paid') {
+      return 'PAID';
+    }
+
+    if (status === 'refunded') {
+      return 'REFUNDED';
+    }
+
+    if (status === 'waiting_approval') {
+      return 'WAITING_APPROVAL';
+    }
+
+    if (status === 'failed') {
+      return 'FAILED';
+    }
+
+    if (status === 'waiting_transfer') {
+      return 'WAITING_TRANSFER';
+    }
+
+    return 'UNPAID';
   }
 }

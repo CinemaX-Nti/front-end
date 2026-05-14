@@ -42,6 +42,10 @@ export class AdminDashboardPage implements OnInit {
   protected menuItemsCount = 0;
   protected usersCount = 0;
   protected pendingPayments: AdminPendingBooking[] = [];
+  protected totalBookings = 0;
+  protected totalRevenue = 0;
+  protected activeShowtimes = 0;
+  protected recentBookings: AdminPendingBooking[] = [];
 
   protected stats: DashboardStat[] = [];
 
@@ -60,14 +64,19 @@ export class AdminDashboardPage implements OnInit {
       menuItems: this.adminService.getMenuItems(),
       users: this.adminService.getUsers(),
       pendingPayments: this.adminService.getPendingPayments(),
+      dashboardStats: this.adminService.getDashboardStats(),
     }).subscribe({
-      next: ({ movies, halls, showtimes, menuItems, users, pendingPayments }) => {
+      next: ({ movies, halls, showtimes, menuItems, users, pendingPayments, dashboardStats }) => {
         this.moviesCount = movies.length;
         this.hallsCount = halls.length;
         this.showtimesCount = showtimes.length;
         this.menuItemsCount = menuItems.length;
         this.usersCount = users.length;
         this.pendingPayments = pendingPayments;
+        this.totalBookings = dashboardStats.totalBookings;
+        this.totalRevenue = dashboardStats.totalRevenue;
+        this.activeShowtimes = dashboardStats.activeShowtimes;
+        this.recentBookings = dashboardStats.recentBookings;
         this.stats = this.buildStats();
         this.isLoading = false;
       },
@@ -137,8 +146,11 @@ export class AdminDashboardPage implements OnInit {
     return [
       { label: 'Total Movies', value: String(this.moviesCount), accent: 'blue' },
       { label: 'Halls', value: String(this.hallsCount), accent: 'green' },
-      { label: 'Pending Payments', value: String(this.pendingPayments.length), accent: 'purple' },
-      { label: 'Awaiting Revenue', value: this.formatMoney(revenueWaitingApproval), accent: 'amber' },
+      { label: 'Active Showtimes', value: String(this.activeShowtimes), accent: 'purple' },
+      { label: 'Total Bookings', value: String(this.totalBookings), accent: 'amber' },
+      { label: 'Total Revenue', value: this.formatMoney(this.totalRevenue), accent: 'blue' },
+      { label: 'Pending Payments', value: String(this.pendingPayments.length), accent: 'green' },
+      { label: 'Awaiting Revenue', value: this.formatMoney(revenueWaitingApproval), accent: 'purple' },
     ];
   }
 

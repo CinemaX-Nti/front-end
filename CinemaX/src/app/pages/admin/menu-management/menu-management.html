@@ -37,9 +37,15 @@
 
   <div class="menu-grid">
     <div class="menu-card" *ngFor="let item of filteredItems" [class.unavailable]="!item.isAvailable">
+      <div class="menu-card-image" *ngIf="item.imageUrl || item.image">
+        <img [src]="item.imageUrl || item.image" [alt]="item.name">
+      </div>
       <div class="menu-card-header">
         <span class="category-tag" [ngClass]="'tag-' + item.category.toLowerCase()">{{ item.category }}</span>
         <div class="card-actions">
+          <button class="btn-icon" (click)="openEditModal(item)" title="Edit Item">
+            Edit
+          </button>
           <button class="btn-icon" (click)="toggleAvailability(item)" title="Toggle Availability">
             {{ item.isAvailable ? 'On' : 'Off' }}
           </button>
@@ -71,7 +77,7 @@
   <div class="modal-overlay" *ngIf="isAddModalOpen" (click)="closeAddModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Add New Menu Item</h2>
+        <h2>{{ isEditing ? 'Edit Menu Item' : 'Add New Menu Item' }}</h2>
         <button class="btn-close" (click)="closeAddModal()">X</button>
       </div>
       
@@ -101,6 +107,15 @@
           <label>Description</label>
           <textarea [(ngModel)]="newItem.description" class="form-control" rows="3" placeholder="Brief description of the item"></textarea>
         </div>
+
+        <div class="form-group">
+          <label>Image URL</label>
+          <input type="url" [(ngModel)]="newItem.imageUrl" class="form-control" placeholder="https://example.com/snack.jpg">
+        </div>
+
+        <div class="image-preview" *ngIf="newItem.imageUrl">
+          <img [src]="newItem.imageUrl" [alt]="newItem.name || 'Menu item preview'">
+        </div>
         
         <div class="form-group checkbox-group">
           <input type="checkbox" id="isAvailable" [(ngModel)]="newItem.isAvailable">
@@ -110,7 +125,7 @@
       
       <div class="modal-footer">
         <button class="btn-cancel" (click)="closeAddModal()">Cancel</button>
-        <button class="btn-save" (click)="saveNewItem()">Save Item</button>
+        <button class="btn-save" (click)="saveNewItem()">{{ isEditing ? 'Update Item' : 'Save Item' }}</button>
       </div>
     </div>
   </div>

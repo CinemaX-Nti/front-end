@@ -23,13 +23,7 @@
           </a>
         </li>
 
-        <ng-container *ngIf="!isAdmin">
-          <li class="nav-item">
-            <a class="nav-link cinema-navbar__link" routerLink="/booking-history" routerLinkActive="active"
-              (click)="closeMenu()">
-              My Bookings
-            </a>
-          </li>
+        <ng-container *ngIf="isAuthenticated">
           <li class="nav-item">
             <a class="nav-link cinema-navbar__link" routerLink="/profile" routerLinkActive="active"
               (click)="closeMenu()">

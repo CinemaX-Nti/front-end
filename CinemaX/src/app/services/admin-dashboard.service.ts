@@ -74,6 +74,7 @@ interface BackendMenuItem {
   _id: string;
   name: string;
   description: string;
+  imageUrl?: string;
   category: string;
   price: number;
   isAvailable: boolean;
@@ -166,6 +167,7 @@ export interface AdminMenuItem {
   id: string;
   name: string;
   description: string;
+  imageUrl: string;
   category: string;
   price: number;
   isAvailable: boolean;
@@ -192,10 +194,17 @@ export interface AdminPendingBooking {
   showtime: string;
   seats: string[];
   totalAmount: number;
-  paymentStatus: 'waiting_transfer' | 'waiting_approval' | 'paid' | 'failed' | 'refunded';
+  paymentStatus: string;
   paymentReference: string;
   createdAt: string;
   expiresAt: string;
+}
+
+export interface DashboardStats {
+  totalBookings: number;
+  totalRevenue: number;
+  activeShowtimes: number;
+  recentBookings: AdminPendingBooking[];
 }
 
 export interface CreateMoviePayload {
@@ -210,6 +219,8 @@ export interface CreateMoviePayload {
   rating?: number;
   status: 'now_showing' | 'coming_soon' | 'archived';
 }
+
+export interface UpdateMoviePayload extends Partial<CreateMoviePayload> {}
 
 export interface CreateHallPayload {
   name: string;
@@ -238,6 +249,7 @@ export interface CreateShowtimePayload {
 export interface CreateMenuItemPayload {
   name: string;
   description: string;
+  imageUrl?: string;
   category: string;
   price: number;
   isAvailable: boolean;
@@ -260,6 +272,12 @@ export class AdminDashboardService {
   createMovie(payload: CreateMoviePayload): Observable<AdminMovie> {
     return this.http
       .post<WrappedResponse<BackendMovie>>(`${this.apiBaseUrl}/movies`, payload, this.requestOptions())
+      .pipe(map((response) => this.mapMovie(response.data)));
+  }
+
+  updateMovie(movieId: string, payload: UpdateMoviePayload): Observable<AdminMovie> {
+    return this.http
+      .patch<WrappedResponse<BackendMovie>>(`${this.apiBaseUrl}/movies/${movieId}`, payload, this.requestOptions())
       .pipe(map((response) => this.mapMovie(response.data)));
   }
 
@@ -317,6 +335,7 @@ export class AdminDashboardService {
         {
           name: item.name,
           description: item.description,
+          imageUrl: item.imageUrl,
           category: item.category,
           price: item.price,
           isAvailable,
@@ -351,6 +370,12 @@ export class AdminDashboardService {
       {},
       this.requestOptions(),
     );
+  }
+
+  getDashboardStats(): Observable<DashboardStats> {
+    return this.http
+      .get<WrappedResponse<DashboardStats>>(`${this.apiBaseUrl}/admin/dashboard-stats`, this.requestOptions())
+      .pipe(map((response) => response.data));
   }
 
   private requestOptions(): { headers: HttpHeaders } {
@@ -409,6 +434,7 @@ export class AdminDashboardService {
       id: item._id,
       name: item.name,
       description: item.description,
+      imageUrl: item.imageUrl ?? '',
       category: item.category,
       price: item.price,
       isAvailable: item.isAvailable,

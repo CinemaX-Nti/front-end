@@ -21,8 +21,11 @@
 
         <div class="hero-actions">
           <a routerLink="/movies" class="btn hero-btn hero-btn--primary">Browse Movies</a>
-          <a routerLink="/sign-in" class="btn hero-btn hero-btn--outline">Sign In</a>
-          <a routerLink="/sign-up" class="hero-link">Create Account</a>
+          <ng-container *ngIf="!isAuthenticated">
+            <a routerLink="/sign-in" class="btn hero-btn hero-btn--outline">Sign In</a>
+            <a routerLink="/sign-up" class="hero-link">Create Account</a>
+          </ng-container>
+          <a *ngIf="isAdmin" routerLink="/admin" class="btn hero-btn hero-btn--admin">Admin Dashboard</a>
         </div>
       </div>
     </div>
