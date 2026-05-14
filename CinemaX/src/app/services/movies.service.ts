@@ -1,225 +1,123 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
-import { AuthService } from './auth.service';
-
-// This interface represents the movie object used across the UI.
-// It is mapped from the backend response (e.g. _id, genre, posterUrl).
-export interface iMovie {
-  id: string;
-  title: string;
-  duration: string;
-  rating: string;
-  status: 'Now Showing' | 'Coming Soon' | 'New' | string;
-  genres: string[];
-  image: string;
-}
-
-export interface iMovieShowtime {
-  id: string;
-  time: string;
-  hall: string;
-  seats: number;
-  price: number;
-  format: string;
-  tag: string;
-}
-
-export interface iMovieDetails {
-  id: string;
-  title: string;
-  status: string;
-  duration: string;
-  releaseDate: string;
-  rating: string;
-  genres: string[];
-  image: string;
-  startingPrice: number;
-  description: string;
-  synopsis: string;
-  showtimes: iMovieShowtime[];
-  trailerUrl: string;
-}
-
-interface MoviesResponse {
-  success: boolean;
-  data: unknown[];
-  pagination?: {
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-  };
-}
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { shareReplay } from 'rxjs/operators';
+import { IMovie, IMovieDetails, IMovieShowTime } from '../models/movie.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MoviesService {
   private http = inject(HttpClient);
-  private authService = inject(AuthService);
 
-  private apiUrl = 'http://localhost:3000/movies';
+  private apiUrl = `${environment.api.baseUrl}/movies`;
 
-  getMovies(): Observable<iMovie[]> {
-    return this.http.get<MoviesResponse | unknown[]>(`${this.apiUrl}?limit=100`, this.requestOptions()).pipe(
-      map((response) =>
-        this.extractMovieArray(response)
-          .map((movie) => this.toiMovie(movie))
-          .filter((movie) => Boolean(movie.id && movie.title))
-      )
+  private movies$?: Observable<IMovie[]>;
+
+  getMovies(): Observable<IMovie[]> {
+    if (!this.movies$) {
+      this.movies$ = this.http.get<IMovie[]>(this.apiUrl).pipe(
+        map((response: any) => {
+          const rawMovies = Array.isArray(response) ? response : Array.isArray(response?.data) ? response.data : [];
+          return (rawMovies ?? []).map((movie: any) => this.normalizeMovie(movie));
+        }),
+        shareReplay(1),
+      );
+    }
+    return this.movies$;
+  }
+
+  getMovieById(id: string): Observable<IMovieDetails> {
+    return this.getMovies().pipe(
+      map((movies) => {
+        const movie = movies.find((entry) => entry.id === id);
+        return this.enrichMovieDetails(movie ?? this.createFallbackMovie(id));
+      }),
     );
   }
 
-  getMovieDetails(movieId: string): Observable<iMovieDetails> {
-    return this.http.get<{ success: boolean; data: any }>(
-      `${this.apiUrl}/${movieId}/showtimes`,
-      this.requestOptions(),
-    ).pipe(
-      map((response) => this.toMovieDetails(response.data?.movie, response.data?.showTimes ?? [])),
-    );
+  private normalizeMovie(movie: any): IMovie {
+    return {
+      ...movie,
+      id: movie.id ?? movie._id,
+      genres: movie.genres ?? movie.genre ?? [],
+      image: movie.image ?? movie.posterUrl ?? 'images/layout-landingpage.png',
+      language: movie.language ?? 'English',
+      duration: typeof movie.duration === 'number' ? movie.duration : undefined,
+      rating: typeof movie.rating === 'number' ? movie.rating : movie.rating ? Number(movie.rating) : 0,
+      status: movie.status ?? 'now_showing',
+    } as IMovie;
   }
 
-  private toiMovie(m: any): iMovie {
+  private enrichMovieDetails(movie: IMovie): IMovieDetails {
+    const titleSeed = movie.title || 'CinemaX Feature';
+    const primaryGenre = movie.genres?.[0] ?? 'Sci-Fi';
+    const description =
+      movie.description ??
+      `An epic ${primaryGenre.toLowerCase()} experience filled with atmosphere, momentum, and a night worth booking early.`;
+    const showtimes = this.buildShowtimes(movie);
+
     return {
-      id: String(m?.id ?? m?._id ?? ''),
-      title: this.toDisplayTitle(String(m?.title ?? m?.name ?? '')),
-      duration: `${String(m?.duration ?? m?.runtime ?? '')} min`,
-      rating: String(m?.rating ?? m?.score ?? ''),
-      status: this.toDisplayStatus(String(m?.status ?? 'now_showing')),
-      genres: Array.isArray(m?.genres)
-        ? m.genres.map((g: any) => this.toDisplayGenre(String(g)))
-        : Array.isArray(m?.genre)
-          ? m.genre.map((g: any) => this.toDisplayGenre(String(g)))
-          : [],
-      image: String(m?.image ?? m?.poster ?? m?.posterUrl ?? ''),
+      ...movie,
+      title: titleSeed,
+      tagline: `${titleSeed} lights up the screen with a premium cinematic event.`,
+      releaseDate: movie.releaseDate ?? 'May 1, 2026',
+      format: showtimes[0]?.format ?? '2D',
+      startingPrice: Math.min(...showtimes.map((showtime) => showtime.pricing?.standard ?? showtime.price)),
+      description,
+      synopsis: `${description} Discover a richly crafted story, immersive visuals, and performances designed for the big screen.`,
+      director: 'CinemaX Studio',
+      cast: 'Lead Cast Ensemble',
+      showtimes,
     };
   }
 
-  private toMovieDetails(movie: any, showtimes: any[]): iMovieDetails {
-    const mappedShowtimes = Array.isArray(showtimes)
-      ? showtimes.map((showtime) => this.toMovieShowtime(showtime))
-      : [];
+  private buildShowtimes(movie: IMovie): IMovieShowTime[] {
+    const releaseBase = movie.releaseDate ?? '2026-05-15';
+    const dates = ['2026-05-15', '2026-05-16', '2026-05-17'];
+    const normalizedDates = dates.includes(releaseBase) ? dates : [releaseBase, '2026-05-16', '2026-05-17'];
 
-    const startingPrice = mappedShowtimes.length > 0
-      ? Math.min(...mappedShowtimes.map((showtime) => showtime.price))
-      : 0;
+    const templates = [
+      { time: '14:00', endTime: '16:30', hall: 'Hall 1', format: '2D', seats: 45, pricing: { standard: 12, premium: 18, vip: 25 } },
+      { time: '17:00', endTime: '19:30', hall: 'Hall 2', format: 'IMAX', seats: 28, pricing: { standard: 15, premium: 22, vip: 30 } },
+      { time: '20:00', endTime: '22:30', hall: 'Hall 1', format: '3D', seats: 52, pricing: { standard: 14, premium: 20, vip: 28 } },
+      { time: '15:00', endTime: '17:30', hall: 'Hall 1', format: '2D', seats: 67, pricing: { standard: 12, premium: 18, vip: 25 } },
+      { time: '18:30', endTime: '21:00', hall: 'Hall 2', format: 'IMAX', seats: 15, pricing: { standard: 15, premium: 22, vip: 30 } },
+    ];
 
+    return templates.map((template, index) => {
+      const date = normalizedDates[index < 3 ? 0 : 1];
+      return {
+        id: `${movie.id}-showtime-${index + 1}`,
+        date,
+        time: template.time,
+        endTime: template.endTime,
+        hall: template.hall,
+        seats: template.seats,
+        price: template.pricing.standard,
+        format: template.format,
+        tag: 'Scheduled',
+        pricing: template.pricing,
+      };
+    });
+  }
+
+  private createFallbackMovie(id: string): IMovie {
     return {
-      id: String(movie?._id ?? movie?.id ?? ''),
-      title: this.toDisplayTitle(String(movie?.title ?? '')),
-      status: this.toDisplayStatus(String(movie?.status ?? 'now_showing')),
-      duration: `${String(movie?.duration ?? '')} min`,
-      releaseDate: movie?.releaseDate ? new Date(movie.releaseDate).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }) : 'TBA',
-      rating: String(movie?.rating ?? 'N/A'),
-      genres: Array.isArray(movie?.genre)
-        ? movie.genre.map((genre: string) => this.toDisplayGenre(genre))
-        : [],
-      image: String(movie?.posterUrl ?? movie?.image ?? ''),
-      startingPrice,
-      description: String(movie?.description ?? ''),
-      synopsis: String(movie?.description ?? ''),
-      showtimes: mappedShowtimes,
-      trailerUrl: String(movie?.trailerUrl ?? ''),
-    };
-  }
-
-  private toMovieShowtime(showtime: any): iMovieShowtime {
-    const prices = [
-      Number(showtime?.pricing?.standard ?? Number.MAX_SAFE_INTEGER),
-      Number(showtime?.pricing?.premium ?? Number.MAX_SAFE_INTEGER),
-      Number(showtime?.pricing?.vip ?? Number.MAX_SAFE_INTEGER),
-    ].filter((value) => Number.isFinite(value) && value > 0);
-
-    return {
-      id: String(showtime?._id ?? ''),
-      time: showtime?.startTime ? new Date(showtime.startTime).toLocaleTimeString([], {
-        hour: 'numeric',
-        minute: '2-digit',
-      }) : 'TBA',
-      hall: String(showtime?.hallId?.name ?? 'Unknown hall'),
-      seats: Number(showtime?.availableSeats ?? 0),
-      price: prices.length > 0 ? Math.min(...prices) : 0,
-      format: String(showtime?.format ?? '2D'),
-      tag: this.toShowtimeTag(String(showtime?.status ?? 'scheduled')),
-    };
-  }
-
-  private toDisplayStatus(status: string): iMovie['status'] {
-    switch (status) {
-      case 'coming_soon':
-        return 'Coming Soon';
-      case 'archived':
-        return 'Archived';
-      default:
-        return 'Now Showing';
-    }
-  }
-
-  private toDisplayGenre(genre: string): string {
-    if (!genre) {
-      return '';
-    }
-
-    return genre
-      .split('-')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join('-');
-  }
-
-  private toDisplayTitle(title: string): string {
-    if (!title) {
-      return '';
-    }
-
-    return title.replace(/\b\w/g, (character) => character.toUpperCase());
-  }
-
-  private toShowtimeTag(status: string): string {
-    switch (status) {
-      case 'running':
-        return 'LIVE';
-      case 'finished':
-        return 'FINISHED';
-      case 'cancelled':
-        return 'CANCELLED';
-      default:
-        return 'SCHEDULED';
-    }
-  }
-
-  private extractMovieArray(response: MoviesResponse | unknown[]): any[] {
-    if (Array.isArray(response)) {
-      return response;
-    }
-
-    if (Array.isArray(response?.data)) {
-      return response.data as any[];
-    }
-
-    if (
-      response &&
-      typeof response === 'object' &&
-      'data' in response &&
-      response.data &&
-      typeof response.data === 'object' &&
-      'data' in (response.data as Record<string, unknown>) &&
-      Array.isArray((response.data as Record<string, unknown>)['data'])
-    ) {
-      return (response.data as Record<string, unknown>)['data'] as any[];
-    }
-
-    return [];
-  }
-
-  private requestOptions(): { headers: HttpHeaders } {
-    return {
-      headers: new HttpHeaders(this.authService.getAuthHeaders()),
+      id,
+      title: 'Stellar Odyssey',
+      description:
+        'An epic journey through the cosmos as a crew of astronauts discover ancient alien technology that holds the key to humanity’s survival.',
+      duration: 150,
+      rating: 8.5,
+      status: 'now_showing',
+      genres: ['Sci-Fi', 'Adventure', 'Drama'],
+      image: 'images/movies-1.png',
+      releaseDate: '2026-05-01',
+      language: 'English',
+      trailerUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     };
   }
 }
-

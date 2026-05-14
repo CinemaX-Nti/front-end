@@ -11,7 +11,7 @@ export const SEATS_LAYOUT_CONFIG: SeatsLayoutConfig = {
   // these numbers are chosen to look like the provided image.
   seatsPerRow: [12, 12, 12, 12, 12, 12, 12, 12],
   // add an aisle after these seat indices (applies to all rows)
-  aisleAfterSeatNumbers: [4], // spacer after seat #4
+  aisleAfterSeatNumbers: [6],
 };
 
 export const SEAT_ID_SEPARATOR = '';
@@ -25,6 +25,7 @@ export function rowSeatId(row: string, seatNumber: number): string {
 
 export function seatStateClass(state: SeatState): string {
   if (state === 'booked') return 'booked';
+  if (state === 'reserved') return 'reserved';
   if (state === 'selected') return 'selected';
   return 'available';
 }

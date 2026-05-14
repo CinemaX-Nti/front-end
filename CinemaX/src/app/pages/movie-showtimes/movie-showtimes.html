@@ -1,0 +1,78 @@
+<section class="showtimes-page">
+  <div class="container showtimes-shell">
+    <a *ngIf="movie" [routerLink]="['/movies', movie.id]" class="back-link">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Movie Details</span>
+    </a>
+
+    <app-loading *ngIf="isLoading" label="Loading showtimes..."></app-loading>
+
+    <ng-container *ngIf="!isLoading && movie">
+      <header class="movie-banner">
+        <div>
+          <h1><i class="bi bi-film"></i>{{ movie.title }}</h1>
+          <p>
+            <span><i class="bi bi-star-fill"></i>{{ movie.rating | number: '1.1-1' }}</span>
+            <span>&bull;</span>
+            <span>{{ movie.genres?.[0] || 'Feature Film' }}</span>
+            <span>&bull;</span>
+            <span>{{ movie.duration ? ((movie.duration / 60) | number: '1.0-0') + 'h ' + (movie.duration % 60) + 'm' : 'TBA' }}</span>
+          </p>
+        </div>
+      </header>
+
+      <section class="date-section">
+        <h2>Select Date</h2>
+        <div class="date-tabs">
+          <button type="button" class="date-tab" [class.date-tab--active]="selectedDate === 'all'" (click)="selectDate('all')">
+            All Dates
+          </button>
+          <button
+            *ngFor="let date of dateOptions"
+            type="button"
+            class="date-tab"
+            [class.date-tab--active]="selectedDate === date"
+            (click)="selectDate(date)"
+          >
+            <span>{{ date | date: 'EEE' }}</span>
+            <strong>{{ date | date: 'MMM d' }}</strong>
+          </button>
+        </div>
+      </section>
+
+      <section *ngFor="let group of groupedShowtimes" class="showtime-group">
+        <h3><i class="bi bi-calendar-event"></i>{{ formatMetaDate(group.date) }}</h3>
+
+        <div class="showtime-grid">
+          <article *ngFor="let showtime of group.showtimes" class="showtime-card">
+            <div class="showtime-card__header">
+              <div>
+                <div class="showtime-card__time">
+                  <i class="bi bi-clock"></i>
+                  <strong>{{ showtime.time }}</strong>
+                  <span>{{ showtime.endTime }}</span>
+                </div>
+                <div class="showtime-card__hall">
+                  <i class="bi bi-geo-alt"></i>
+                  <span>{{ showtime.hall }}</span>
+                </div>
+              </div>
+              <span class="showtime-format" [class.showtime-format--imax]="showtime.format === 'IMAX'">{{ showtime.format }}</span>
+            </div>
+
+            <span class="showtime-tag">{{ showtime.tag }}</span>
+            <p class="showtime-seats">{{ showtime.seats }} seats available</p>
+
+            <div class="showtime-prices">
+              <span>Standard <strong>${{ showtime.pricing?.standard }}</strong></span>
+              <span>Premium <strong>${{ showtime.pricing?.premium }}</strong></span>
+              <span>VIP <strong>${{ showtime.pricing?.vip }}</strong></span>
+            </div>
+
+            <button type="button" class="showtime-action" (click)="goToSeats(showtime)">Select Seats</button>
+          </article>
+        </div>
+      </section>
+    </ng-container>
+  </div>
+</section>

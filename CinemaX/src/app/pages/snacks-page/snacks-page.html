@@ -1,0 +1,112 @@
+<section class="snacks-page">
+  <div class="snacks-shell">
+    <a
+      *ngIf="bookingFlow.snapshot.movie && bookingFlow.snapshot.showtime"
+      [routerLink]="['/movies', bookingFlow.snapshot.movie.id, 'showtimes', bookingFlow.snapshot.showtime.id, 'seats']"
+      class="page-back-link"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Seat Selection</span>
+    </a>
+
+    <div class="snacks-layout">
+      <div>
+        <header class="snacks-header">
+          <h1>Snacks & Drinks</h1>
+          <p>Pre-order your favorites and skip the queue</p>
+        </header>
+
+        <div class="filter-tabs">
+          <button type="button" class="filter-tab" [class.filter-tab--active]="activeFilter === 'ALL'" (click)="setFilter('ALL')">All Items</button>
+          <button type="button" class="filter-tab" [class.filter-tab--active]="activeFilter === 'SNACK'" (click)="setFilter('SNACK')">Snack</button>
+          <button type="button" class="filter-tab" [class.filter-tab--active]="activeFilter === 'BEVERAGE'" (click)="setFilter('BEVERAGE')">Drink</button>
+          <button type="button" class="filter-tab" [class.filter-tab--active]="activeFilter === 'COMBO'" (click)="setFilter('COMBO')">Combo</button>
+        </div>
+
+        <div class="snacks-grid">
+          <article *ngFor="let item of filteredItems" class="snack-card" [class.snack-card--disabled]="!item.isAvailable">
+            <div class="snack-card__media">
+              <img [src]="item.image || 'images/snacks-withoutSelectingItems.png'" [alt]="item.name" />
+            </div>
+
+            <div class="snack-card__body">
+              <h2>{{ item.name }}</h2>
+              <p>{{ item.description }}</p>
+              <strong>${{ item.price }}</strong>
+              <span *ngIf="!item.isAvailable" class="availability-text">Unavailable</span>
+            </div>
+
+            <div class="snack-card__actions">
+              <ng-container *ngIf="getQuantity(item.id) === 0; else quantityPicker">
+                <button type="button" class="add-button" (click)="addItem(item)" [disabled]="!item.isAvailable">
+                  <i class="bi bi-plus-lg"></i>
+                  <span>Add</span>
+                </button>
+              </ng-container>
+
+              <ng-template #quantityPicker>
+                <div class="quantity-picker">
+                  <button type="button" (click)="decreaseItem(item)">−</button>
+                  <span>{{ getQuantity(item.id) }}</span>
+                  <button type="button" (click)="addItem(item)">+</button>
+                </div>
+              </ng-template>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <aside class="summary-card">
+        <h2>Order Summary</h2>
+
+        <div class="summary-block">
+          <h3><i class="bi bi-armchair"></i>Selected Seats</h3>
+          <div class="seat-tags">
+            <span *ngFor="let seat of selectedSeatLabels" class="seat-tag">{{ seat }}</span>
+          </div>
+          <div class="summary-line">
+            <span>Ticket Total</span>
+            <strong>${{ ticketTotal }}</strong>
+          </div>
+        </div>
+
+        <div class="summary-block">
+          <h3><i class="bi bi-basket3"></i>Food & Drinks</h3>
+
+          <ng-container *ngIf="selectedSnacks.length > 0; else noItems">
+            <div class="summary-items">
+              <div *ngFor="let snack of selectedSnacks" class="summary-line">
+                <span>{{ snack.item.name }} (x{{ snack.quantity }})</span>
+                <strong>${{ snack.item.price * snack.quantity }}</strong>
+              </div>
+            </div>
+
+            <div class="summary-line">
+              <span>Food Total</span>
+              <strong>${{ snackTotal }}</strong>
+            </div>
+          </ng-container>
+
+          <ng-template #noItems>
+            <p class="summary-empty">No items added</p>
+          </ng-template>
+        </div>
+
+        <div class="summary-total">
+          <span>Grand Total</span>
+          <strong>${{ grandTotal }}</strong>
+        </div>
+
+        <button type="button" class="continue-button" (click)="continueToCheckout()">Continue to Checkout</button>
+
+        <a
+          *ngIf="bookingFlow.snapshot.movie && bookingFlow.snapshot.showtime"
+          [routerLink]="['/movies', bookingFlow.snapshot.movie.id, 'showtimes', bookingFlow.snapshot.showtime.id, 'checkout']"
+          class="skip-link"
+        >
+          Skip, No Thanks
+        </a>
+      </aside>
+    </div>
+  </div>
+</section>

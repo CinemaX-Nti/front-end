@@ -131,7 +131,7 @@
           </form>
 
           <!-- Register Form -->
-          <form *ngIf="!isLoginView && !isForgotPasswordView && !isOtpStep" [formGroup]="registerForm"
+          <form *ngIf="!isLoginView && !isForgotPasswordView" [formGroup]="registerForm"
             (ngSubmit)="onSubmit()" class="auth-form">
             <div class="row">
               <div class="col-md-6">
@@ -277,59 +277,6 @@
               <p>Already have an account? <a (click)="toggleView()" class="auth-link">Sign In</a></p>
             </div>
           </form>
-
-          <!-- OTP Verification Screen -->
-          <div *ngIf="isOtpStep" class="otp-verification">
-            <div class="otp-header">
-              <h2 class="otp-title">Verify Your Email</h2>
-              <p class="otp-subtitle">We've sent a 6-digit code to {{ pendingUserData?.email || 'your email' }}</p>
-            </div>
-
-            <form [formGroup]="otpForm" (ngSubmit)="onVerify()" class="otp-form">
-              <div class="otp-inputs">
-                <div class="otp-input-group">
-                  <input type="text" #otpInput class="otp-input" formControlName="digit1" maxlength="1"
-                    (input)="onOtpInput($event, 0)" (keydown)="onOtpBackspace($event, 0)" (paste)="onPasteOtp($event)"
-                    autocomplete="off">
-                  <input type="text" #otpInput class="otp-input" formControlName="digit2" maxlength="1"
-                    (input)="onOtpInput($event, 1)" (keydown)="onOtpBackspace($event, 1)" (paste)="onPasteOtp($event)"
-                    autocomplete="off">
-                  <input type="text" #otpInput class="otp-input" formControlName="digit3" maxlength="1"
-                    (input)="onOtpInput($event, 2)" (keydown)="onOtpBackspace($event, 2)" (paste)="onPasteOtp($event)"
-                    autocomplete="off">
-                  <input type="text" #otpInput class="otp-input" formControlName="digit4" maxlength="1"
-                    (input)="onOtpInput($event, 3)" (keydown)="onOtpBackspace($event, 3)" (paste)="onPasteOtp($event)"
-                    autocomplete="off">
-                  <input type="text" #otpInput class="otp-input" formControlName="digit5" maxlength="1"
-                    (input)="onOtpInput($event, 4)" (keydown)="onOtpBackspace($event, 4)" (paste)="onPasteOtp($event)"
-                    autocomplete="off">
-                  <input type="text" #otpInput class="otp-input" formControlName="digit6" maxlength="1"
-                    (input)="onOtpInput($event, 5)" (keydown)="onOtpBackspace($event, 5)" (paste)="onPasteOtp($event)"
-                    autocomplete="off">
-                </div>
-              </div>
-
-              <button type="submit" class="btn btn-verify" [disabled]="isOtpLoading || otpForm.invalid">
-                <span *ngIf="isOtpLoading" class="spinner-border spinner-border-sm me-2"></span>
-                {{ isOtpLoading ? 'Verifying...' : 'Verify Code' }}
-              </button>
-
-              <div class="otp-actions">
-                <div class="resend-section">
-                  <p class="resend-text">Didn't receive the code?</p>
-                  <button type="button" class="btn-resend" (click)="resendOtp()"
-                    [disabled]="otpResendTimer > 0 || isResendLoading">
-                    <span *ngIf="isResendLoading" class="spinner-border spinner-border-sm me-2"></span>
-                    {{ otpResendTimer > 0 ? `Resend in ${otpResendTimer}s` : 'Resend Code' }}
-                  </button>
-                </div>
-                <button type="button" class="btn-back" (click)="hideOtpVerification()">
-                  <i class="bi bi-arrow-left"></i>
-                  Back to Sign Up
-                </button>
-              </div>
-            </form>
-          </div>
 
           <!-- Forgot Password Flow -->
           <div *ngIf="isForgotPasswordView" class="forgot-password-flow">

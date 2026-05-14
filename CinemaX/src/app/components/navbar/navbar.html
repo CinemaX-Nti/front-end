@@ -1,53 +1,93 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
-  <div class="container-fluid">
-    <a class="navbar-brand d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-1" routerLink="/">
-      <span class="fw-bold fs-5 text-white">{{ isAdmin ? 'CinemaX Admin' : 'CinemaX' }}</span>
-      <small *ngIf="isAdmin" class="text-muted mb-0">Dashboard & Management</small>
+<nav class="navbar navbar-expand-lg cinema-navbar sticky-top">
+  <div class="container-fluid cinema-navbar__container">
+    <a class="navbar-brand cinema-navbar__brand" routerLink="/" (click)="closeMenu()">
+      <span class="cinema-navbar__brand-mark" aria-hidden="true">
+        <i class="bi bi-film"></i>
+      </span>
+      <span class="cinema-navbar__brand-text">
+        {{ isAdmin ? 'CinemaX Admin' : 'CinemaX' }}
+      </span>
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler cinema-navbar__toggler" type="button" data-bs-toggle="collapse"
+      data-bs-target="#cinemaNavbar" aria-controls="cinemaNavbar" aria-expanded="false" aria-label="Toggle navigation"
+      (click)="toggleMenu()">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
+    <div class="collapse navbar-collapse cinema-navbar__collapse" id="cinemaNavbar" [class.show]="isMenuOpen">
+      <ul class="navbar-nav mx-auto align-items-lg-center cinema-navbar__nav">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/movies" routerLinkActive="active">Movies</a>
+          <a class="nav-link cinema-navbar__link" routerLink="/movies" routerLinkActive="active" (click)="closeMenu()">
+            Movies
+          </a>
         </li>
-        <li class="nav-item" *ngIf="!isAdmin">
-          <a class="nav-link" routerLink="/booking-history" routerLinkActive="active">My Bookings</a>
-        </li>
-        <li class="nav-item" *ngIf="!isAdmin">
-          <a class="nav-link" routerLink="/profile" routerLinkActive="active">Profile</a>
-        </li>
-        <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/admin" routerLinkActive="active">Dashboard</a>
-        </li>
-        <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/movies" routerLinkActive="active">Movies</a>
-        </li>
-        <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/halls" routerLinkActive="active">Halls</a>
-        </li>
-        <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/showtimes" routerLinkActive="active">Showtimes</a>
-        </li>
-        <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/menu" routerLinkActive="active">Menu</a>
-        </li>
-        <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/bookings" routerLinkActive="active">Bookings</a>
-        </li>
-        <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/users" routerLinkActive="active">Users</a>
-        </li>
+
+        <ng-container *ngIf="!isAdmin">
+          <li class="nav-item">
+            <a class="nav-link cinema-navbar__link" routerLink="/booking-history" routerLinkActive="active"
+              (click)="closeMenu()">
+              My Bookings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link cinema-navbar__link" routerLink="/profile" routerLinkActive="active"
+              (click)="closeMenu()">
+              Profile
+            </a>
+          </li>
+        </ng-container>
+
+        <ng-container *ngIf="isAdmin">
+          <li class="nav-item">
+            <a class="nav-link cinema-navbar__link" routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link cinema-navbar__link" routerLink="/menu" routerLinkActive="active" (click)="closeMenu()">
+              Menu
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link cinema-navbar__link" routerLink="/bookings" routerLinkActive="active"
+              (click)="closeMenu()">
+              Bookings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link cinema-navbar__link" routerLink="/users" routerLinkActive="active" (click)="closeMenu()">
+              Users
+            </a>
+          </li>
+        </ng-container>
       </ul>
 
-      <div class="d-flex align-items-center gap-2 ms-lg-3">
-        <a *ngIf="!isAuthenticated" class="btn btn-outline-light btn-sm" routerLink="/sign-in">Sign In</a>
-        <a *ngIf="!isAuthenticated" class="btn btn-danger btn-sm" routerLink="/sign-up">Sign Up</a>
-        <button *ngIf="isAuthenticated" type="button" class="btn btn-outline-light btn-sm" (click)="logout()">
+      <div
+        class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 cinema-navbar__actions">
+        <button type="button" class="btn cinema-navbar__icon-button" aria-label="Search">
+          <i class="bi bi-search"></i>
+        </button>
+
+        <a *ngIf="!isAuthenticated" class="btn cinema-navbar__icon-button" routerLink="/sign-up"
+          aria-label="Create account" (click)="closeMenu()">
+          <i class="bi bi-person"></i>
+        </a>
+
+        <a *ngIf="!isAuthenticated" class="btn cinema-navbar__cta" routerLink="/sign-in" (click)="closeMenu()">
+          Sign In
+        </a>
+
+        <a *ngIf="isAuthenticated && !isAdmin" class="btn cinema-navbar__cta" routerLink="/profile"
+          (click)="closeMenu()">
+          My Account
+        </a>
+
+        <a *ngIf="isAuthenticated && isAdmin" class="btn cinema-navbar__cta" routerLink="/admin" (click)="closeMenu()">
+          Dashboard
+        </a>
+
+        <button *ngIf="isAuthenticated" type="button" class="btn cinema-navbar__secondary" (click)="logout()">
           Logout
         </button>
       </div>

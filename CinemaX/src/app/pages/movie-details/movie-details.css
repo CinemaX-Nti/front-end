@@ -1,282 +1,284 @@
-/* Movie details page theme (cinemaX) */
-
 .movie-details-page {
-  min-height: 100vh;
-  position: relative;
-  overflow: hidden;
-  background-color: #090b12;
-}
-
-/* Cinematic background */
-.movie-details-page::before {
-  content: "";
-  position: absolute;
-  inset: 0;
+  min-height: calc(100vh - 78px);
   background:
-    radial-gradient(900px circle at 10% 10%, rgba(229, 9, 20, 0.25), transparent 55%),
-    radial-gradient(700px circle at 90% 30%, rgba(99, 102, 241, 0.22), transparent 60%),
-    radial-gradient(900px circle at 50% 100%, rgba(16, 185, 129, 0.12), transparent 60%),
-    linear-gradient(180deg, rgba(9, 11, 18, 0.85) 0%, rgba(9, 11, 18, 1) 100%);
-  pointer-events: none;
-  z-index: 0;
+    radial-gradient(circle at top left, rgba(224, 183, 52, 0.08), transparent 25%),
+    radial-gradient(circle at top right, rgba(176, 9, 20, 0.08), transparent 22%),
+    #09090f;
+  color: #fff;
 }
 
-/* Subtle grain */
-.movie-details-page::after {
-  content: "";
-  position: absolute;
-  inset: -40px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
-  opacity: 0.08;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  z-index: 0;
+.details-shell {
+  width: min(1320px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 1.25rem 0 2.75rem;
 }
 
-.movie-details-page > .container {
-  position: relative;
-  z-index: 1;
-}
-
-.movie-alert {
-  background: rgba(255, 193, 7, 0.14) !important;
-  color: #ffe7a3 !important;
-}
-
-/* Hero card */
-.movie-card {
-  background: rgba(18, 18, 18, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 12px;
-}
-
-.poster-panel {
-  background-color: #05060a;
-  position: relative;
-  min-height: 520px;
-  overflow: hidden;
-}
-
-.poster-panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0) 48%,
-    rgba(0, 0, 0, 0.22) 68%,
-    rgba(0, 0, 0, 0.72) 100%
-  );
-  pointer-events: none;
-  z-index: 1;
-}
-
-.poster-panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(4, 4, 8, 0.04), rgba(4, 4, 8, 0.2));
-  z-index: 1;
-}
-
-.poster-image {
-  width: 100%;
-  height: 100%;
-  min-height: 520px;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-@media (max-width: 991.98px) {
-  .poster-panel {
-    min-height: 380px;
-  }
-
-  .poster-image {
-    min-height: 380px;
-  }
-}
-
-@media (max-width: 576px) {
-  .poster-panel {
-    min-height: 310px;
-  }
-
-  .poster-image {
-    min-height: 310px;
-  }
-}
-
-/* Status badge */
-.status-badge {
+.page-back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  background: rgba(229, 9, 20, 0.16) !important;
-  color: #ffb4b4 !important;
-  border: 1px solid rgba(229, 9, 20, 0.35) !important;
-  padding: 0.55rem 0.8rem;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  color: #cfd4e4;
+  text-decoration: none;
+}
+
+.hero-panel,
+.showtime-card {
+  border: 1px solid rgba(224, 183, 52, 0.18);
+  background: #17171d;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+}
+
+.hero-panel {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1.5rem;
+}
+
+.hero-poster {
+  position: relative;
+  min-height: 300px;
+  overflow: hidden;
+  border-radius: 1.1rem;
+}
+
+.hero-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.status-chip {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  z-index: 1;
+  padding: 0.45rem 0.8rem;
   border-radius: 999px;
-  letter-spacing: 0.02em;
-  box-shadow: 0 16px 40px rgba(229, 9, 20, 0.08);
-  font-weight: 700;
-}
-
-.movie-title {
-  font-size: clamp(3rem, 4.6vw, 4.25rem);
+  background: #e0b734;
+  color: #111114;
+  font-size: 0.72rem;
   font-weight: 800;
-  line-height: 0.98;
-  letter-spacing: -0.04em;
-  text-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
 }
 
-/* Meta pills */
-.movie-meta {
-  margin-top: 0.5rem;
-  gap: 18px;
+.hero-content {
+  padding: 0.15rem 0.25rem;
 }
 
-.info-pill {
+.hero-content h1 {
+  margin: 0 0 0.9rem;
+  color: #e9bc34;
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  font-weight: 800;
+}
+
+.meta-row,
+.genre-row,
+.hero-actions,
+.section-heading,
+.showtime-card__top,
+.showtime-time,
+.showtime-footer {
+  display: flex;
+  align-items: center;
+}
+
+.meta-row,
+.genre-row {
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.meta-pill,
+.genre-chip,
+.format-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.55rem 0.8rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid rgba(224, 183, 52, 0.22);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.92rem;
-}
-
-.movie-description {
-  max-width: 720px;
-  line-height: 1.75;
-}
-
-.info-pill i {
-  opacity: 0.95;
-}
-
-/* Genre badges */
-.genre-badge {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: rgba(255, 255, 255, 0.88) !important;
-  border-radius: 999px;
-  padding: 0.45rem 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  color: #f2f4fb;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
-/* Buttons */
-.btn-danger {
-  background: linear-gradient(135deg, #e50914 0%, #ff2a2a 100%) !important;
-  border-color: transparent !important;
-  border-radius: 999px !important;
-  padding-inline: 1rem;
+.meta-pill i,
+.showtime-date i {
+  color: #e9bc34;
 }
 
-.btn-danger:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
+.genre-row {
+  margin-top: 0.85rem;
 }
 
-/* Trailer CTA button a little more premium */
-.movie-card .btn.btn-lg {
-  padding: 0.9rem 1.5rem;
-  letter-spacing: 0.01em;
-  box-shadow: 0 14px 28px rgba(229, 9, 20, 0.14);
+.hero-copy {
+  max-width: 740px;
+  margin: 1rem 0 1.35rem;
+  color: #dbe0ee;
+  line-height: 1.65;
 }
 
-.price-block {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+.hero-actions {
+  gap: 0.85rem;
+  flex-wrap: wrap;
 }
 
-.price-label {
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.5);
+.primary-action,
+.secondary-action,
+.showtime-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0 1.15rem;
+  border-radius: 0.95rem;
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.price-value {
-  font-size: 2.1rem;
+.primary-action {
+  background: #e0b734;
+  color: #101115;
+  box-shadow: 0 16px 30px rgba(224, 183, 52, 0.16);
+}
+
+.secondary-action {
+  border: 1px solid #e0b734;
+  background: transparent;
+  color: #e0b734;
+}
+
+.secondary-action--muted {
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.showtimes-section {
+  margin-top: 1.5rem;
+}
+
+.section-heading {
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.section-heading h2 {
+  margin: 0;
+  color: #e9bc34;
+  font-size: 1.8rem;
   font-weight: 800;
-  line-height: 1;
-  color: #ffd6a5;
 }
 
-/* Details + schedule cards */
-.details-panel,
-.schedule-panel {
-  background: rgba(24, 27, 35, 0.65) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 16px;
+.section-heading a {
+  color: #cfd4e4;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.details-panel {
-  background: rgba(24, 27, 35, 0.55) !important;
+.showtime-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
 }
 
-/* Section headers */
-.details-panel h2,
-.schedule-panel h2 {
-  letter-spacing: 0.2px;
+.showtime-card {
+  padding: 0.95rem 1rem;
+  border-radius: 0.95rem;
 }
 
-/* Labels inside info blocks */
-.info-block {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.showtime-card__top,
+.showtime-footer {
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
-.detail-label {
-  display: block;
-  font-size: 0.82rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
+.showtime-date,
+.showtime-hall,
+.showtime-seats {
+  color: #d0d5e2;
+  font-size: 0.8rem;
+}
+
+.showtime-time {
+  gap: 0.5rem;
+  margin: 0.55rem 0 0.45rem;
+}
+
+.showtime-time strong {
+  font-size: 1.2rem;
+}
+
+.showtime-hall {
   margin-bottom: 0.35rem;
 }
 
-.detail-value {
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.92) !important;
+.format-pill {
+  min-width: 46px;
+  justify-content: center;
+  padding-inline: 0.6rem;
 }
 
-/* Showtimes list */
-.showtime-item {
-  background: rgba(0, 0, 0, 0.18) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+.format-pill--imax {
+  border-color: rgba(168, 18, 18, 0.5);
+  color: #d53c3c;
 }
 
-.showtime-item:hover {
-  border-color: rgba(229, 9, 20, 0.35) !important;
+.showtime-footer {
+  margin-top: 0.8rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(224, 183, 52, 0.14);
 }
 
-.showtime-item .badge {
-  border-radius: 999px;
-  padding: 0.45rem 0.75rem;
-  font-weight: 700;
+.showtime-price {
+  color: #e9bc34;
+  font-size: 1.35rem;
+  font-weight: 800;
 }
 
-.showtime-item .btn {
-  border-radius: 999px !important;
-}
-
-.text-uppercase {
-  letter-spacing: 0.15em;
-}
-
-/* spacing tweaks */
-#showtimes {
-  position: sticky;
-  top: 84px;
+.showtime-link {
+  min-height: auto;
+  padding: 0;
+  color: #d9ddeb;
 }
 
 @media (max-width: 991.98px) {
-  #showtimes {
-    position: static;
+  .hero-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-poster {
+    min-height: 360px;
+  }
+
+  .showtime-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
+@media (max-width: 767.98px) {
+  .details-shell {
+    width: calc(100% - 24px);
+  }
+
+  .hero-poster {
+    min-height: 280px;
+  }
+
+  .showtime-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

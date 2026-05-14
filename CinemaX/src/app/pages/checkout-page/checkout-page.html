@@ -1,0 +1,111 @@
+<section class="checkout-page">
+  <div class="checkout-shell" *ngIf="bookingFlow.snapshot.movie as movie">
+    <a
+      *ngIf="bookingFlow.snapshot.showtime as showtime"
+      [routerLink]="['/movies', movie.id, 'showtimes', showtime.id, 'snacks']"
+      class="page-back-link"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Snacks</span>
+    </a>
+
+    <h1>Booking Summary</h1>
+
+    <div class="checkout-layout" *ngIf="bookingFlow.snapshot.showtime as showtime">
+      <div class="checkout-main">
+        <section class="info-card movie-card">
+          <div class="movie-card__poster">
+            <img [src]="movie.image || 'images/movies-1.png'" [alt]="movie.title + ' poster'" />
+          </div>
+
+          <div class="movie-card__body">
+            <div class="movie-card__top">
+              <div>
+                <h2>{{ movie.title }}</h2>
+                <p>{{ movie.genres?.[0] || 'Feature Film' }}</p>
+              </div>
+              <span class="format-pill">{{ showtime.format }}</span>
+            </div>
+
+            <div class="movie-card__details">
+              <span><i class="bi bi-calendar-event"></i>{{ showtime.date | date: 'MMM d, y' }}</span>
+              <span><i class="bi bi-clock"></i>{{ showtime.time }} - {{ showtime.endTime }}</span>
+              <span><i class="bi bi-geo-alt"></i>{{ showtime.hall }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-card">
+          <h2><i class="bi bi-armchair"></i>Selected Seats</h2>
+
+          <div class="seat-tags">
+            <span *ngFor="let seat of bookingFlow.snapshot.seats" class="seat-tag">{{ seat.id }}</span>
+          </div>
+
+          <div class="line-items">
+            <div class="line-item" *ngFor="let seat of bookingFlow.snapshot.seats">
+              <span>{{ seat.id }} - {{ seat.tier | titlecase }}</span>
+              <strong>${{ seat.price }}</strong>
+            </div>
+          </div>
+
+          <div class="total-line">
+            <span>Ticket Total</span>
+            <strong>${{ ticketTotal }}</strong>
+          </div>
+        </section>
+
+        <section class="info-card">
+          <h2><i class="bi bi-basket3"></i>Food & Drinks</h2>
+
+          <ng-container *ngIf="bookingFlow.snapshot.snacks.length > 0; else noSnacks">
+            <div class="line-items">
+              <div class="line-item" *ngFor="let snack of bookingFlow.snapshot.snacks">
+                <span>{{ snack.item.name }} (x{{ snack.quantity }})</span>
+                <strong>${{ snack.item.price * snack.quantity }}</strong>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #noSnacks>
+            <p class="empty-text">No snacks added</p>
+          </ng-template>
+
+          <div class="total-line">
+            <span>Food Total</span>
+            <strong>${{ snackTotal }}</strong>
+          </div>
+        </section>
+      </div>
+
+      <aside class="payment-card">
+        <h2>Payment Summary</h2>
+
+        <div class="line-item">
+          <span>Tickets ({{ bookingFlow.snapshot.seats.length }})</span>
+          <strong>${{ ticketTotal }}</strong>
+        </div>
+        <div class="line-item">
+          <span>Food & Drinks</span>
+          <strong>${{ snackTotal }}</strong>
+        </div>
+        <div class="line-item">
+          <span>Booking Fee</span>
+          <strong>$0</strong>
+        </div>
+
+        <div class="payment-total">
+          <span>Total Amount</span>
+          <strong>${{ total }}</strong>
+        </div>
+
+        <button type="button" class="confirm-button">
+          <i class="bi bi-check-lg"></i>
+          <span>Confirm Booking</span>
+        </button>
+
+        <p class="payment-note">By confirming, you agree to our terms and conditions</p>
+      </aside>
+    </div>
+  </div>
+</section>

@@ -13,6 +13,7 @@ import { AuthService } from '../../services/auth.service';
 export class Navbar {
   protected readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  protected isMenuOpen = false;
 
   protected get isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
@@ -22,7 +23,16 @@ export class Navbar {
     return this.authService.currentUserValue?.role === 'admin';
   }
 
+  protected toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  protected closeMenu(): void {
+    this.isMenuOpen = false;
+  }
+
   protected logout(): void {
+    this.closeMenu();
     this.authService.logout();
     this.router.navigate(['/']);
   }

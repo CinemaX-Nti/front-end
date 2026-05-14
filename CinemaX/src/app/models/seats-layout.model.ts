@@ -1,9 +1,12 @@
-export type SeatState = 'available' | 'selected' | 'booked';
+import { SeatTier } from '../services/booking-flow.service';
+
+export type SeatState = 'available' | 'selected' | 'reserved' | 'booked';
 
 export interface Seat {
   id: string; // e.g. J12
   row: string; // e.g. J
   number: number; // e.g. 12
+  tier: SeatTier;
   state: SeatState;
 }
 

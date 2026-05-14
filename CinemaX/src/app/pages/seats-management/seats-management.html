@@ -1,42 +1,123 @@
-<section class="seats-page py-5">
-  <div class="container">
-    <div class="seats-header mb-4">
-      <h1 class="h3 text-white mb-1">Select Your Seats</h1>
-      <p class="text-white-50 mb-0">Click to select. Booked seats are disabled.</p>
-    </div>
+<section class="seats-page">
+  <div class="seats-shell">
+    <a *ngIf="movie" [routerLink]="['/movies', movie.id, 'showtimes']" class="page-back-link">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Showtimes</span>
+    </a>
 
-    <div class="legend mb-3">
-      <div class="legend-item"><span class="dot available"></span> Available</div>
-      <div class="legend-item"><span class="dot selected"></span> Selected</div>
-      <div class="legend-item"><span class="dot booked"></span> Booked</div>
-    </div>
+    <app-loading *ngIf="isLoading" label="Loading seats..."></app-loading>
 
-    <div class="screen-wrap mb-3">
-      <div class="screen">SCREEN</div>
-    </div>
+    <ng-container *ngIf="!isLoading && movie && showtime">
+      <div class="seats-layout">
+        <div class="seats-main">
+          <section class="movie-banner">
+            <h1>
+              <i class="bi bi-film"></i>
+              {{ movie.title }}
+            </h1>
 
-    <div class="seat-map-wrapper">
-      <div class="seat-map" aria-label="Seat layout">
-        <div class="row-grid" *ngFor="let row of rows">
-          <ng-container *ngFor="let cell of getRowRenderCells(row)">
-            <button *ngIf="cell; else aisle" type="button" class="seat" [class.selected]="cell?.state === 'selected'"
-              [class.booked]="cell?.state === 'booked'" [class.available]="cell?.state === 'available'"
-              (click)="toggleSeat(cell!)" [attr.aria-label]="cell?.id" [disabled]="cell?.state === 'booked'">
-              <span class="seat-num">{{ cell?.number | number:'2.0' }}</span>
-            </button>
+            <div class="movie-banner__meta">
+              <span><i class="bi bi-clock"></i>{{ showtime.date | date: 'MMM d, y' }} · {{ showtime.time }} - {{ showtime.endTime }}</span>
+              <span><i class="bi bi-geo-alt"></i>{{ showtime.hall }}</span>
+              <span class="format-pill">{{ showtime.format }}</span>
+            </div>
+          </section>
 
-            <ng-template #aisle>
-              <div class="aisle-gap" aria-hidden="true"></div>
-            </ng-template>
+          <section class="screen-section">
+            <div class="screen-glow"></div>
+            <div class="screen-label">SCREEN</div>
+          </section>
+
+          <section class="seat-map-card">
+            <div class="seat-map" aria-label="Seat layout">
+              <div class="row-grid" *ngFor="let row of rows">
+                <span class="row-label">{{ row }}</span>
+
+                <ng-container *ngFor="let cell of getRowRenderCells(row)">
+                  <button
+                    *ngIf="cell; else aisle"
+                    type="button"
+                    class="seat"
+                    [class.seat--selected]="cell.state === 'selected'"
+                    [class.seat--booked]="cell.state === 'booked'"
+                    [class.seat--reserved]="cell.state === 'reserved'"
+                    [class.seat--premium]="cell.tier === 'premium'"
+                    [class.seat--vip]="cell.tier === 'vip'"
+                    (click)="toggleSeat(cell)"
+                    [disabled]="cell.state === 'booked'"
+                    [attr.aria-label]="cell.id"
+                  >
+                    <i class="bi bi-armchair"></i>
+                  </button>
+
+                  <ng-template #aisle>
+                    <div class="aisle-gap" aria-hidden="true"></div>
+                  </ng-template>
+                </ng-container>
+
+                <span class="row-label row-label--right">{{ row }}</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="seat-info-card">
+            <div class="seat-info-grid">
+              <div>
+                <h2>Seat Status</h2>
+                <ul class="seat-list">
+                  <li><span class="seat-indicator seat-indicator--available"><i class="bi bi-armchair"></i></span>Available</li>
+                  <li><span class="seat-indicator seat-indicator--selected"><i class="bi bi-armchair"></i></span>Selected</li>
+                  <li><span class="seat-indicator seat-indicator--reserved"><i class="bi bi-armchair"></i></span>Reserved</li>
+                  <li><span class="seat-indicator seat-indicator--booked"><i class="bi bi-armchair"></i></span>Booked</li>
+                </ul>
+              </div>
+
+              <div>
+                <h2>Seat Types & Pricing</h2>
+                <ul class="seat-list seat-list--prices">
+                  <li><span class="seat-indicator seat-indicator--available"><i class="bi bi-armchair"></i></span>Standard <strong>${{ showtime.pricing?.standard }}</strong></li>
+                  <li><span class="seat-indicator seat-indicator--premium"><i class="bi bi-armchair"></i></span>Premium <strong>${{ showtime.pricing?.premium }}</strong></li>
+                  <li><span class="seat-indicator seat-indicator--vip"><i class="bi bi-armchair"></i></span>VIP <strong>${{ showtime.pricing?.vip }}</strong></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="summary-card" [class.summary-card--active]="selectedSeats.length > 0">
+          <h2>Booking Summary</h2>
+
+          <ng-container *ngIf="selectedSeats.length === 0; else selectedSummary">
+            <div class="summary-empty">
+              <i class="bi bi-armchair"></i>
+              <p>Select seats to continue</p>
+            </div>
           </ng-container>
 
-          <div class="row-label">{{ row }}</div>
-        </div>
-      </div>
-    </div>
+          <ng-template #selectedSummary>
+            <div class="summary-section">
+              <h3>Selected Seats</h3>
+              <div class="seat-tags">
+                <span *ngFor="let seat of selectedSeats" class="seat-tag">{{ seat.id }}</span>
+              </div>
+            </div>
 
-    <div class="mt-4 text-white-50">
-      Selected: <span class="text-white">{{ selectedSeatIds.size }}</span>
-    </div>
+            <div class="summary-breakdown">
+              <div *ngIf="standardCount > 0"><span>Standard ({{ standardCount }}x)</span><strong>${{ standardCount * (showtime.pricing?.standard || 0) }}</strong></div>
+              <div *ngIf="premiumCount > 0"><span>Premium ({{ premiumCount }}x)</span><strong>${{ premiumCount * (showtime.pricing?.premium || 0) }}</strong></div>
+              <div *ngIf="vipCount > 0"><span>VIP ({{ vipCount }}x)</span><strong>${{ vipCount * (showtime.pricing?.vip || 0) }}</strong></div>
+            </div>
+
+            <div class="summary-total">
+              <span>Total</span>
+              <strong>${{ total }}</strong>
+            </div>
+
+            <button type="button" class="continue-button" (click)="continueToSnacks()">Continue to Snacks</button>
+            <p class="summary-note">{{ seatCountLabel }}</p>
+          </ng-template>
+        </aside>
+      </div>
+    </ng-container>
   </div>
 </section>

@@ -1,7 +1,8 @@
+import { MenuItem } from './../../../services/menu.service';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MenuService, MenuItem } from '../../../services/menu.service';
+import { MenuService } from '../../../services/menu.service';
 
 @Component({
   selector: 'app-menu-management',
@@ -46,8 +47,8 @@ export class MenuManagementPage implements OnInit {
 
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter((item) => 
-        item.name.toLowerCase().includes(query) || 
+      filtered = filtered.filter((item) =>
+        item.name.toLowerCase().includes(query) ||
         item.description.toLowerCase().includes(query)
       );
     }
@@ -61,13 +62,12 @@ export class MenuManagementPage implements OnInit {
   }
 
   toggleAvailability(item: MenuItem): void {
-    this.menuService.toggleAvailability(item).subscribe({
-      next: (updatedItem) => {
-        const targetItem = this.menuItems.find((menuItem) => menuItem.id === updatedItem.id);
-        if (targetItem) {
-          targetItem.isAvailable = updatedItem.isAvailable;
+    this.menuService.toggleAvailability(item.id).subscribe({
+      next: (updated) => {
+        if (updated) {
+          item.isAvailable = !item.isAvailable;
+          this.applyFilters();
         }
-        this.applyFilters();
       },
       error: (error) => {
         this.errorMessage = error?.error?.message || 'Failed to update menu item availability.';

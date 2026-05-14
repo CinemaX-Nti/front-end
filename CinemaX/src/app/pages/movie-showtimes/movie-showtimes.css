@@ -1,0 +1,200 @@
+.showtimes-page {
+  min-height: 100vh;
+  padding: 1rem 0 4rem;
+  background: #09090f;
+  color: #f6f7fb;
+}
+
+.showtimes-shell {
+  max-width: 1410px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  color: #cbd3e7;
+  text-decoration: none;
+}
+
+.movie-banner {
+  padding: 1.5rem;
+  border: 1px solid rgba(226, 183, 47, 0.16);
+  border-radius: 1.25rem;
+  background: #17171d;
+}
+
+.movie-banner h1 {
+  margin: 0 0 0.65rem;
+  color: #efc340;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 800;
+}
+
+.movie-banner h1 i,
+.showtime-group h3 i {
+  margin-right: 0.7rem;
+}
+
+.movie-banner p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin: 0;
+  color: #d9deec;
+}
+
+.date-section {
+  margin-top: 2rem;
+}
+
+.date-section h2 {
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.date-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.date-tab {
+  min-width: 90px;
+  min-height: 66px;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(226, 183, 47, 0.16);
+  border-radius: 1rem;
+  background: #17171d;
+  color: #c7ccda;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.date-tab strong {
+  font-size: 1.35rem;
+}
+
+.date-tab--active {
+  background: #dfba35;
+  border-color: #dfba35;
+  color: #09090f;
+}
+
+.showtime-group {
+  margin-top: 2.5rem;
+}
+
+.showtime-group h3 {
+  margin-bottom: 1rem;
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.showtime-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.showtime-card {
+  padding: 1.35rem;
+  border: 1px solid rgba(226, 183, 47, 0.16);
+  border-radius: 1.2rem;
+  background: #17171d;
+}
+
+.showtime-card__header,
+.showtime-card__time,
+.showtime-card__hall {
+  display: flex;
+  align-items: center;
+}
+
+.showtime-card__header {
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.showtime-card__time,
+.showtime-card__hall {
+  gap: 0.5rem;
+}
+
+.showtime-card__time strong {
+  font-size: 2rem;
+  color: #fff;
+}
+
+.showtime-card__time span,
+.showtime-card__hall span,
+.showtime-seats {
+  color: #cfd5e3;
+}
+
+.showtime-card__hall {
+  margin-top: 0.85rem;
+}
+
+.showtime-format,
+.showtime-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(226, 183, 47, 0.4);
+}
+
+.showtime-format {
+  min-width: 56px;
+  min-height: 30px;
+  color: #efc340;
+  font-size: 0.88rem;
+}
+
+.showtime-format--imax {
+  border-color: rgba(202, 22, 22, 0.5);
+  color: #d93d3d;
+}
+
+.showtime-tag {
+  margin-top: 1rem;
+  padding: 0.3rem 0.6rem;
+  background: rgba(226, 183, 47, 0.08);
+  color: #efc340;
+}
+
+.showtime-prices {
+  margin: 1rem 0 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(226, 183, 47, 0.16);
+  display: grid;
+  gap: 0.55rem;
+}
+
+.showtime-prices span {
+  display: flex;
+  justify-content: space-between;
+  color: #d8dded;
+}
+
+.showtime-action {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #dfba35;
+  border-radius: 1rem;
+  background: transparent;
+  color: #efc340;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+  .showtime-grid {
+    grid-template-columns: 1fr;
+  }
+}

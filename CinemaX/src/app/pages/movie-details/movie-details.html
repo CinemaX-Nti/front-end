@@ -1,95 +1,104 @@
-<section class="movie-details-page py-5">
-  <div class="container">
-    <div *ngIf="errorMessage" class="alert alert-warning border-0 movie-alert mb-4">
-      {{ errorMessage }}
-    </div>
+<section class="movie-details-page">
+  <div class="details-shell">
+    <a routerLink="/movies" class="page-back-link">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Movies</span>
+    </a>
 
-    <div *ngIf="isLoading" class="card details-panel border-0 text-white shadow-sm p-4 p-md-5 mb-5">
-      Loading movie details...
-    </div>
+    <app-loading *ngIf="isLoading" label="Loading movie details..."></app-loading>
 
-    <div class="card movie-card border-0 bg-black shadow-sm overflow-hidden mb-5">
-      <div class="row g-0 align-items-center">
-        <div class="col-12 col-lg-5 poster-panel">
-          <img [src]="movie.image" alt="{{ movie.title }} poster" class="img-fluid poster-image" />
+    <ng-container *ngIf="!isLoading && movie">
+      <section class="hero-panel">
+        <div class="hero-poster">
+          <span class="status-chip">{{ movie.status === 'coming_soon' ? 'Coming Soon' : 'Now Showing' }}</span>
+          <img [src]="movie.image || 'images/movies-1.png'" [alt]="movie.title + ' poster'" />
         </div>
 
-        <div class="col-12 col-lg-7 p-4 p-xl-5 text-white">
-          <span class="badge status-badge mb-3">{{ movie.status }}</span>
-          <h1 class="movie-title mb-3">{{ movie.title }}</h1>
-          <div class="d-flex flex-wrap align-items-center mb-3 text-white-50 movie-meta">
-            <span class="info-pill"><i class="bi bi-clock me-1"></i>{{ movie.duration }}</span>
-            <span class="info-pill"><i class="bi bi-calendar-event me-1"></i>{{ movie.releaseDate }}</span>
-            <span class="info-pill"><i class="bi bi-star-fill text-warning me-1"></i>{{ movie.rating }} / 10</span>
-          </div>
-          <div class="mb-3">
-            <span *ngFor="let genre of movie.genres" class="badge genre-badge me-2 mb-2">{{ genre }}</span>
-          </div>
-          <p class="movie-description lead text-white-75 mb-4">{{ movie.description }}</p>
+        <div class="hero-content">
+          <h1>{{ movie.title }}</h1>
 
-          <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
-            <button class="btn btn-danger btn-lg px-4" type="button" (click)="openTrailer()">
-              Watch Trailer
+          <div class="meta-row">
+            <span class="meta-pill">
+              <i class="bi bi-star-fill"></i>
+              {{ movie.rating | number: '1.1-1' }}/10
+            </span>
+            <span class="meta-pill">
+              <i class="bi bi-clock"></i>
+              {{ formatDuration(movie.duration) }}
+            </span>
+            <span class="meta-pill">
+              <i class="bi bi-translate"></i>
+              {{ movie.language || 'English' }}
+            </span>
+            <span class="meta-pill">
+              <i class="bi bi-calendar-event"></i>
+              {{ movie.releaseDate }}
+            </span>
+          </div>
+
+          <div class="genre-row">
+            <span *ngFor="let genre of movie.genres" class="genre-chip">{{ genre }}</span>
+          </div>
+
+          <p class="hero-copy">{{ movie.description }}</p>
+
+          <div class="hero-actions">
+            <a [routerLink]="['/movies', movie.id, 'showtimes']" class="primary-action">
+              <i class="bi bi-ticket-perforated"></i>
+              <span>Book Tickets</span>
+            </a>
+
+            <a
+              *ngIf="movie.trailerUrl"
+              [href]="movie.trailerUrl"
+              class="secondary-action"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i class="bi bi-play-fill"></i>
+              <span>Watch Trailer</span>
+            </a>
+            <button *ngIf="!movie.trailerUrl" type="button" class="secondary-action secondary-action--muted">
+              <i class="bi bi-play-fill"></i>
+              <span>Watch Trailer</span>
             </button>
-            <div class="price-block">
-              <small class="price-label text-uppercase letter-spacing">Starting from</small>
-              <div class="price-value mb-0">${{ movie.startingPrice }}</div>
-            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="row g-4">
-      <div class="col-12 col-xl-7">
-        <div class="card details-panel border-0 bg-dark text-white shadow-sm p-4 p-md-5">
-          <h2 class="h5 text-white mb-3">Synopsis</h2>
-          <p class="text-white-75 mb-4">{{ movie.synopsis }}</p>
-          <div class="info-block p-4 rounded-4">
-            <span class="detail-label">Movie Overview</span>
-            <p class="mb-0 detail-value">
-              {{ movie.showtimes.length }} scheduled show{{ movie.showtimes.length === 1 ? '' : 's' }} available right now.
-            </p>
-          </div>
+      <section class="showtimes-section">
+        <div class="section-heading">
+          <h2>Available Showtimes</h2>
+          <a [routerLink]="['/movies', movie.id, 'showtimes']">View All Showtimes</a>
         </div>
-      </div>
 
-      <div class="col-12 col-xl-5">
-        <div id="showtimes" class="card schedule-panel border-0 bg-black text-white shadow-sm p-4 p-md-4">
-          <div class="d-flex align-items-center justify-content-between mb-4 gap-3 flex-column flex-sm-row">
-            <div>
-              <h2 class="h5 text-white mb-1">Available Showtimes</h2>
-              <p class="text-white-50 mb-0">Find the show that fits your evening.</p>
-            </div>
-            <span class="badge bg-warning text-dark">Best Seller</span>
-          </div>
-
-          <div class="list-group list-group-flush">
-            <div *ngFor="let showtime of movie.showtimes"
-              class="list-group-item showtime-item p-3 mb-3 rounded-4 border border-white-10 bg-dark">
-              <div class="d-flex flex-column flex-sm-row justify-content-between gap-3 align-items-start">
-                <div>
-                  <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                    <span class="h5 text-white mb-0">{{ showtime.time }}</span>
-                    <span class="badge bg-white text-dark">{{ showtime.format }}</span>
-                    <span class="badge bg-primary">{{ showtime.tag }}</span>
-                  </div>
-                  <div class="text-white-50 small">{{ showtime.hall }} · {{ showtime.seats }} seats available</div>
-                </div>
-                <div class="text-sm-end">
-                  <div class="text-white fw-bold mb-2">Starting from ${{ showtime.price }}</div>
-                  <a [routerLink]="['/movies', movie.title, showtime.time]" class="btn btn-sm btn-danger">Select
-                    Seats</a>
-                </div>
-              </div>
+        <div class="showtime-grid">
+          <article *ngFor="let showtime of previewShowtimes" class="showtime-card">
+            <div class="showtime-card__top">
+              <span class="showtime-date">
+                <i class="bi bi-calendar-event"></i>
+                {{ showtime.date | date: 'MMM d' }}
+              </span>
+              <span class="format-pill" [class.format-pill--imax]="showtime.format === 'IMAX'">
+                {{ showtime.format }}
+              </span>
             </div>
 
-            <div *ngIf="movie.showtimes.length === 0" class="text-white-50">
-              No showtimes available for this movie yet.
+            <div class="showtime-time">
+              <strong>{{ showtime.time }}</strong>
+              <span>{{ showtime.endTime }}</span>
             </div>
-          </div>
+
+            <div class="showtime-hall">{{ showtime.hall }}</div>
+            <div class="showtime-seats">{{ showtime.seats }} seats left</div>
+
+            <div class="showtime-footer">
+              <span class="showtime-price">${{ showtime.pricing?.standard || showtime.price }}</span>
+              <a [routerLink]="['/movies', movie.id, 'showtimes']" class="showtime-link">Select Seats</a>
+            </div>
+          </article>
         </div>
-      </div>
-    </div>
+      </section>
+    </ng-container>
   </div>
 </section>

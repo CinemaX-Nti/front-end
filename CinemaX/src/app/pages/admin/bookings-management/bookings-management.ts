@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingService, Booking } from '../../../services/booking.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-bookings-management',
@@ -32,7 +33,7 @@ export class BookingsManagementPage implements OnInit {
         this.bookings = data;
         this.applyFilters();
       },
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         this.errorMessage = error?.error?.message || 'Failed to load bookings from the backend.';
       }
     });
@@ -69,7 +70,7 @@ export class BookingsManagementPage implements OnInit {
         booking.canApprovePayment = false;
         this.applyFilters();
       },
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         this.errorMessage = error?.error?.message || 'Failed to approve payment.';
       }
     });

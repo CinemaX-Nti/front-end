@@ -1,4 +1,4 @@
-import { Component, OnDestroy, ViewChildren, QueryList, ElementRef, AfterViewInit, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
@@ -18,11 +18,11 @@ export class AuthComponent implements OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private readonly destroy$ = new Subject<void>();
+  private resetEmail = '';
 
   // View toggles
   isLoginView = true;
   isForgotPasswordView = false;
-  isOtpStep = false;
   resetStep: 1 | 2 | 3 = 1;
   days = Array.from({ length: 31 }, (_, i) => i + 1);
   months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -45,19 +45,18 @@ export class AuthComponent implements OnDestroy {
   showConfirmPassword = false;
   showNewPassword = false;
   showConfirmNewPassword = false;
+  isConfirmEmailView = false;
+  authMessage = '';
+  authMessageType: 'success' | 'error' = 'success';
+  otpIndexes = [0, 1, 2, 3, 4, 5];
+
 
   // Loading states
   isLoading = false;
   isResendLoading = false;
   isGoogleLoading = false;
-  isOtpLoading = false;
   resendTimer = 0;
-  otpResendTimer = 0;
   private timerInterval: any;
-  private otpTimerInterval: any;
-
-  // Template references for OTP inputs
-  @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   // Login form
   loginForm = new FormGroup({
@@ -87,19 +86,6 @@ export class AuthComponent implements OnDestroy {
   forgotPasswordStep2Form = new FormGroup({
     pin: new FormControl('', [Validators.required, Validators.minLength(4), Validators.maxLength(6)])
   });
-
-  // OTP Verification Form
-  otpForm = new FormGroup({
-    digit1: new FormControl('', [Validators.required, Validators.pattern('[0-9]')]),
-    digit2: new FormControl('', [Validators.required, Validators.pattern('[0-9]')]),
-    digit3: new FormControl('', [Validators.required, Validators.pattern('[0-9]')]),
-    digit4: new FormControl('', [Validators.required, Validators.pattern('[0-9]')]),
-    digit5: new FormControl('', [Validators.required, Validators.pattern('[0-9]')]),
-    digit6: new FormControl('', [Validators.required, Validators.pattern('[0-9]')])
-  });
-
-  // Store user data for OTP verification
-  pendingUserData: any = null;
 
   // Forgot Password Step 3: Reset password
   forgotPasswordStep3Form = new FormGroup({
@@ -204,16 +190,39 @@ export class AuthComponent implements OnDestroy {
     } else {
       if (this.registerForm.valid) {
         this.isLoading = true;
-        // Store user data and show OTP verification
-        this.pendingUserData = this.registerForm.value;
-        console.log('Register Form Value:', this.registerForm.value);
+        this.clearMessage();
+        const birthDay = Number(this.registerForm.value.birthDay ?? 1);
+        const birthMonth = Number(this.registerForm.value.birthMonth ?? 1);
+        const birthYear = Number(this.registerForm.value.birthYear ?? new Date().getFullYear());
+        const dateOfBirth = `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
 
-        // Simulate sending OTP
-        setTimeout(() => {
-          this.isLoading = false;
-          this.isOtpStep = true;
-          this.startOtpResendTimer();
-        }, 1500);
+        this.authService.signUp({
+          firstName: this.registerForm.value.firstName ?? '',
+          lastName: this.registerForm.value.lastName ?? '',
+          email: this.registerForm.value.email ?? '',
+          password: this.registerForm.value.password ?? '',
+          phoneNumber: this.registerForm.value.phone ?? '',
+          dateOfBirth,
+        }).subscribe({
+          next: (response) => {
+            this.isLoading = false;
+            const email = this.registerForm.value.email ?? '';
+            const requiresEmailConfirmation = response.data?.requiresEmailConfirmation ?? true;
+
+            if (requiresEmailConfirmation) {
+              this.setMessage(response.message || 'Account created. Please confirm your email.', 'success');
+              void this.router.navigate(['/confirm-email'], { queryParams: { email } });
+              this.startResendTimer();
+            } else {
+              this.setMessage(response.message || 'Account created successfully. Please sign in.', 'success');
+              void this.router.navigate(['/sign-in']);
+            }
+          },
+          error: (error) => {
+            this.isLoading = false;
+            this.setMessage(error?.error?.message || 'Sign up failed.', 'error');
+          }
+        });
       } else {
         this.registerForm.markAllAsTouched();
       }
@@ -381,6 +390,16 @@ export class AuthComponent implements OnDestroy {
     return Array.from({ length: 6 }, (_, index) => otp[index] ?? '');
   }
 
+  private setMessage(message: string, type: 'success' | 'error'): void {
+    this.authMessage = message;
+    this.authMessageType = type;
+  }
+
+  private clearMessage(): void {
+    this.authMessage = '';
+    this.authMessageType = 'success';
+  }
+
   private startResendTimer(): void {
     this.resendTimer = 60;
     this.stopResendTimer();
@@ -415,151 +434,9 @@ export class AuthComponent implements OnDestroy {
     });
   }
 
-  // OTP Verification Methods
-  showOtpVerification(): void {
-    this.isOtpStep = true;
-    this.otpForm.reset();
-    // Focus first input after view is initialized
-    setTimeout(() => {
-      this.focusOtpInput(0);
-    }, 100);
-  }
-
-  hideOtpVerification(): void {
-    this.isOtpStep = false;
-    this.stopOtpResendTimer();
-  }
-
-  // Handle OTP input with proper focus management
-  onOtpInput(event: Event, index: number): void {
-    const input = event.target as HTMLInputElement;
-    const value = input.value;
-
-    // Only allow numbers
-    if (value && !/^[0-9]$/.test(value)) {
-      input.value = '';
-      return;
-    }
-
-    // Auto focus next input
-    if (value && index < 5) {
-      this.focusOtpInput(index + 1);
-    }
-  }
-
-  // Handle backspace for OTP inputs
-  onOtpBackspace(event: KeyboardEvent, index: number): void {
-    if (event.key === 'Backspace') {
-      const currentInput = this.otpInputs.toArray()[index];
-      if (currentInput && currentInput.nativeElement && currentInput.nativeElement.value === '') {
-        // Move to previous input if current is empty
-        if (index > 0) {
-          this.focusOtpInput(index - 1);
-        }
-      }
-    }
-  }
-
-  // Focus specific OTP input
-  private focusOtpInput(index: number): void {
-    const inputs = this.otpInputs.toArray();
-    if (inputs[index] && inputs[index].nativeElement) {
-      inputs[index].nativeElement.focus();
-    }
-  }
-
-  // Handle paste event for OTP
-  onPasteOtp(event: ClipboardEvent): void {
-    event.preventDefault();
-    const pastedData = event.clipboardData?.getData('text');
-    if (!pastedData) return;
-
-    const otpDigits = pastedData.replace(/\D/g, '').slice(0, 6);
-
-    // Fill OTP inputs
-    Object.keys(this.otpForm.controls).forEach((key, index) => {
-      if (index < otpDigits.length) {
-        this.otpForm.get(key)?.setValue(otpDigits[index]);
-      } else {
-        this.otpForm.get(key)?.setValue('');
-      }
-    });
-
-    // Focus next empty input or the last one
-    const nextEmptyIndex = otpDigits.length < 6 ? otpDigits.length : 5;
-    this.focusOtpInput(nextEmptyIndex);
-  }
-
-  onVerify(): void {
-    const otp = this.getOtpValue();
-
-    if (otp.length !== 6) {
-      this.otpForm.markAllAsTouched();
-      return;
-    }
-
-    this.isOtpLoading = true;
-    console.log('Verifying OTP:', otp);
-
-    // Simulate API call
-    setTimeout(() => {
-      this.isOtpLoading = false;
-
-      // Simulate successful verification
-      if (otp === '123456') {
-        console.log('OTP verified successfully');
-        alert('Account created successfully!');
-        this.hideOtpVerification();
-        this.toggleView(); // Go back to login
-      } else {
-        alert('Invalid OTP. Please try again.');
-        this.otpForm.reset();
-        // Focus first input
-        this.focusOtpInput(0);
-      }
-    }, 2000);
-  }
-
-  resendOtp(): void {
-    if (this.otpResendTimer > 0) return;
-
-    this.isResendLoading = true;
-    console.log('Resending OTP to:', this.pendingUserData?.email);
-
-    setTimeout(() => {
-      this.isResendLoading = false;
-      this.startOtpResendTimer();
-      alert('OTP has been resent to your email');
-    }, 1000);
-  }
-
-  private getOtpValue(): string {
-    return Object.keys(this.otpForm.controls)
-      .map(key => this.otpForm.get(key)?.value)
-      .join('');
-  }
-
-  private startOtpResendTimer(): void {
-    this.otpResendTimer = 60;
-    this.stopOtpResendTimer();
-    this.otpTimerInterval = setInterval(() => {
-      this.otpResendTimer--;
-      if (this.otpResendTimer <= 0) {
-        this.stopOtpResendTimer();
-      }
-    }, 1000);
-  }
-
-  private stopOtpResendTimer(): void {
-    if (this.otpTimerInterval) {
-      clearInterval(this.otpTimerInterval);
-      this.otpTimerInterval = null;
-    }
-    this.otpResendTimer = 0;
-  }
-
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.stopResendTimer();
-    this.stopOtpResendTimer();
   }
 }
