@@ -76,6 +76,18 @@ export class BookingsManagementPage implements OnInit {
     });
   }
 
+  actionLabel(booking: Booking): string {
+    if (booking.paymentStatus === 'WAITING_TRANSFER') {
+      return 'Confirm Booking';
+    }
+
+    if (booking.paymentStatus === 'WAITING_APPROVAL') {
+      return 'Approve Payment';
+    }
+
+    return 'View Only';
+  }
+
   explainUnavailableActions(): void {
     this.errorMessage = 'The backend currently supports payment approval only for bookings waiting for admin approval.';
   }

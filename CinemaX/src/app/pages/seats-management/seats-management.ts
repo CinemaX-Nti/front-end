@@ -10,10 +10,9 @@ import {
   SelectedSeat,
   SeatTier,
 } from '../../services/booking-flow.service';
-import { BookingService } from '../../services/booking.service';
+import { BookingService, ShowtimeSeat } from '../../services/booking.service';
 import { MoviesService } from '../../services/movies.service';
 import {
-  DEFAULT_ROWS,
   SEATS_LAYOUT_CONFIG,
   rowSeatId,
 } from './seats-layout.constants';
@@ -32,8 +31,8 @@ export class SeatsManagement implements OnInit {
   private readonly bookingService = inject(BookingService);
   private readonly bookingFlow = inject(BookingFlowService);
 
-  readonly rows = DEFAULT_ROWS;
   readonly layout = SEATS_LAYOUT_CONFIG;
+  rows: string[] = [...SEATS_LAYOUT_CONFIG.rows];
 
   isLoading = true;
   movie: IMovieDetails | null = null;
@@ -52,9 +51,9 @@ export class SeatsManagement implements OnInit {
 
     forkJoin({
       movie: this.moviesService.getMovieById(movieId),
-      bookings: this.bookingService.getBookings(),
+      seats: this.bookingService.getSeatsForShowtime(showtimeId),
     }).subscribe({
-      next: ({ movie, bookings }) => {
+      next: ({ movie, seats }) => {
         const showtime = movie.showtimes.find((entry) => entry.id === showtimeId);
         if (!showtime) {
           this.router.navigate(['/movies', movieId, 'showtimes']);
@@ -65,7 +64,8 @@ export class SeatsManagement implements OnInit {
         this.showtime = showtime;
         this.bookingFlow.ensureSession(movie, showtime);
         this.selectedSeatIds = new Set(this.bookingFlow.snapshot.seats.map((seat) => seat.id));
-        this.seats = this.buildSeats(bookings.flatMap((booking) => booking.seats));
+        this.seats = this.buildSeats(seats);
+        this.rows = this.extractRows(this.seats);
         this.isLoading = false;
       },
       error: () => {
@@ -158,9 +158,29 @@ export class SeatsManagement implements OnInit {
     return rendered;
   }
 
-  private buildSeats(bookedSeats: string[]): Seat[] {
-    const bookedSet = new Set(bookedSeats);
+  private buildSeats(showtimeSeats: ShowtimeSeat[]): Seat[] {
+    if (showtimeSeats.length === 0) {
+      return this.buildFallbackSeats();
+    }
+
     const selectedSet = this.selectedSeatIds;
+    return showtimeSeats
+      .map((seat) => {
+        const parsedSeat = this.parseSeatNumber(seat.seatNumber);
+        const state = this.resolveSeatState(seat, selectedSet);
+
+        return {
+          id: seat.seatNumber,
+          row: parsedSeat.row,
+          number: parsedSeat.number,
+          state,
+          tier: seat.type,
+        } as Seat;
+      })
+      .sort((left, right) => left.row.localeCompare(right.row) || left.number - right.number);
+  }
+
+  private buildFallbackSeats(): Seat[] {
     const seats: Seat[] = [];
 
     for (let rowIndex = 0; rowIndex < this.layout.rows.length; rowIndex++) {
@@ -168,21 +188,12 @@ export class SeatsManagement implements OnInit {
       const seatsInRow = this.layout.seatsPerRow[rowIndex] ?? 0;
 
       for (let number = 1; number <= seatsInRow; number++) {
-        const id = rowSeatId(row, number);
-        let state: SeatState = 'available';
-
-        if (bookedSet.has(id)) {
-          state = 'booked';
-        } else if (selectedSet.has(id)) {
-          state = 'selected';
-        }
-
         seats.push({
-          id,
+          id: rowSeatId(row, number),
           row,
           number,
-          state,
-          tier: this.getSeatTier(row),
+          state: this.selectedSeatIds.has(rowSeatId(row, number)) ? 'selected' : 'available',
+          tier: this.getFallbackSeatTier(row),
         });
       }
     }
@@ -190,7 +201,40 @@ export class SeatsManagement implements OnInit {
     return seats;
   }
 
-  private getSeatTier(row: string): SeatTier {
+  private resolveSeatState(seat: ShowtimeSeat, selectedSet: Set<string>): SeatState {
+    if (selectedSet.has(seat.seatNumber) && seat.status === 'available') {
+      return 'selected';
+    }
+
+    if (seat.status === 'booked' || seat.status === 'locked') {
+      return 'booked';
+    }
+
+    if (seat.status === 'reserved') {
+      return 'reserved';
+    }
+
+    return 'available';
+  }
+
+  private parseSeatNumber(seatNumber: string): { row: string; number: number } {
+    const match = seatNumber.match(/^([A-Za-z]+)(\d+)$/);
+    if (!match) {
+      return { row: seatNumber.charAt(0).toUpperCase() || 'A', number: 0 };
+    }
+
+    return {
+      row: match[1].toUpperCase(),
+      number: Number(match[2]),
+    };
+  }
+
+  private extractRows(seats: Seat[]): string[] {
+    const rows = Array.from(new Set(seats.map((seat) => seat.row)));
+    return rows.length > 0 ? rows : [...SEATS_LAYOUT_CONFIG.rows];
+  }
+
+  private getFallbackSeatTier(row: string): SeatTier {
     if (['F', 'G', 'H'].includes(row)) {
       return 'vip';
     }

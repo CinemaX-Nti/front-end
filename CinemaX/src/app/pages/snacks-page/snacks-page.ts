@@ -21,6 +21,8 @@ export class SnacksPage implements OnInit {
 
   items: MenuItem[] = [];
   activeFilter: SnackFilter = 'ALL';
+  isLoading = true;
+  errorMessage = '';
 
   ngOnInit(): void {
     const movieId = this.route.snapshot.paramMap.get('id');
@@ -32,8 +34,15 @@ export class SnacksPage implements OnInit {
       return;
     }
 
-    this.menuService.getMenuItems().subscribe((items) => {
-      this.items = items;
+    this.menuService.getMenuItems().subscribe({
+      next: (items) => {
+        this.items = items;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'We could not load the snacks menu right now.';
+        this.isLoading = false;
+      },
     });
   }
 

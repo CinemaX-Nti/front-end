@@ -23,6 +23,9 @@
           <button type="button" class="filter-tab" [class.filter-tab--active]="activeFilter === 'COMBO'" (click)="setFilter('COMBO')">Combo</button>
         </div>
 
+        <p *ngIf="isLoading" class="summary-empty">Loading menu...</p>
+        <p *ngIf="!isLoading && errorMessage" class="summary-empty">{{ errorMessage }}</p>
+
         <div class="snacks-grid">
           <article *ngFor="let item of filteredItems" class="snack-card" [class.snack-card--disabled]="!item.isAvailable">
             <div class="snack-card__media">
@@ -97,7 +100,9 @@
           <strong>${{ grandTotal }}</strong>
         </div>
 
-        <button type="button" class="continue-button" (click)="continueToCheckout()">Continue to Checkout</button>
+        <button type="button" class="continue-button" (click)="continueToCheckout()" [disabled]="isLoading || !!errorMessage">
+          Continue to Checkout
+        </button>
 
         <a
           *ngIf="bookingFlow.snapshot.movie && bookingFlow.snapshot.showtime"

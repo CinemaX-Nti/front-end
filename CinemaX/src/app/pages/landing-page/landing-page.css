@@ -151,6 +151,18 @@
   background: rgba(229, 9, 20, 0.12);
 }
 
+.hero-btn--admin {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 18px 34px rgba(255, 107, 53, 0.28);
+}
+
+.hero-btn--admin:hover {
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
 .hero-link {
   color: #ece3cf;
   font-size: 1rem;

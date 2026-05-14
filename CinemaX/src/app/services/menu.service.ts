@@ -1,5 +1,9 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 export interface MenuItem {
   id: string;
@@ -9,114 +13,121 @@ export interface MenuItem {
   price: number;
   isAvailable: boolean;
   image?: string;
+  imageUrl?: string;
+}
+
+interface BackendMenuItem {
+  _id: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
+  category: string;
+  price: number;
+  isAvailable: boolean;
+}
+
+interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class MenuService {
-  private mockItems: MenuItem[] = [
-    {
-      id: 'MENU-01',
-      name: 'Classic Popcorn',
-      category: 'SNACK',
-      description: 'Large buttered popcorn',
-      price: 8,
-      isAvailable: true,
-      image: 'https://images.unsplash.com/photo-1585647347483-22b66260dfff?auto=format&fit=crop&w=200&q=80',
-    },
-    {
-      id: 'MENU-02',
-      name: 'Caramel Popcorn',
-      category: 'SNACK',
-      description: 'Sweet caramel-coated popcorn',
-      price: 9,
-      isAvailable: true,
-      image: 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?auto=format&fit=crop&w=200&q=80',
-    },
-    {
-      id: 'MENU-03',
-      name: 'Nachos & Cheese',
-      category: 'SNACK',
-      description: 'Crispy nachos with cheese dip',
-      price: 7,
-      isAvailable: true,
-      image: 'https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?auto=format&fit=crop&w=200&q=80',
-    },
-    {
-      id: 'MENU-04',
-      name: 'Soft Drink',
-      category: 'BEVERAGE',
-      description: 'Large fountain drink',
-      price: 5,
-      isAvailable: true,
-      image: 'https://images.unsplash.com/photo-1624517452488-04869289c4ca?auto=format&fit=crop&w=200&q=80',
-    },
-    {
-      id: 'MENU-05',
-      name: 'Bottled Water',
-      category: 'BEVERAGE',
-      description: 'Refreshing bottled water',
-      price: 3,
-      isAvailable: true,
-      image: 'https://images.unsplash.com/photo-1564419438221-03d6b7b95fa5?auto=format&fit=crop&w=200&q=80',
-    },
-    {
-      id: 'MENU-06',
-      name: 'Movie Combo',
-      category: 'COMBO',
-      description: 'Popcorn + 2 drinks + nachos',
-      price: 20,
-      isAvailable: true,
-      image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=200&q=80',
-    },
-    {
-      id: 'MENU-07',
-      name: 'Hot Dog',
-      category: 'SNACK',
-      description: 'Classic cinema hot dog',
-      price: 6,
-      isAvailable: true,
-      image: 'https://images.unsplash.com/photo-1612392062798-4245d405b79c?auto=format&fit=crop&w=200&q=80',
-    },
-    {
-      id: 'MENU-08',
-      name: 'Candy Mix',
-      category: 'SNACK',
-      description: 'Assorted movie candies',
-      price: 4,
-      isAvailable: false,
-      image: 'https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?auto=format&fit=crop&w=200&q=80',
-    },
-  ];
-
-  constructor() {}
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   getMenuItems(): Observable<MenuItem[]> {
-    return of(this.mockItems);
+    return this.http
+      .get<PaginatedResponse<BackendMenuItem>>(
+        `${environment.api.baseUrl}/restaurant/menu?limit=100`,
+        this.requestOptions(),
+      )
+      .pipe(map((response) => (response.data ?? []).map((item) => this.mapMenuItem(item))));
   }
 
   toggleAvailability(id: string): Observable<boolean> {
-    const item = this.mockItems.find((i) => i.id === id);
-    if (item) {
-      item.isAvailable = !item.isAvailable;
-      return of(true);
-    }
-    return of(false);
+    return this.http
+      .get<BackendMenuItem>(`${environment.api.baseUrl}/restaurant/menu/${id}`, this.requestOptions())
+      .pipe(
+        map((item) => ({
+          name: item.name,
+          description: item.description,
+          imageUrl: item.imageUrl ?? '',
+          category: item.category,
+          price: item.price,
+          isAvailable: !item.isAvailable,
+        })),
+        switchMap((payload) =>
+          this.http.put<BackendMenuItem>(
+            `${environment.api.baseUrl}/restaurant/menu/${id}`,
+            payload,
+            this.requestOptions(),
+          ),
+        ),
+        map(() => true),
+      );
   }
 
   deleteItem(id: string): Observable<boolean> {
-    const initialLength = this.mockItems.length;
-    this.mockItems = this.mockItems.filter((i) => i.id !== id);
-    return of(this.mockItems.length < initialLength);
+    return this.http
+      .delete(`${environment.api.baseUrl}/restaurant/menu/${id}`, this.requestOptions())
+      .pipe(map(() => true));
   }
 
   addItem(item: Omit<MenuItem, 'id'>): Observable<MenuItem> {
-    const newItem: MenuItem = {
-      ...item,
-      id: `MENU-${Math.floor(10 + Math.random() * 90)}`, // Generate random ID like MENU-45
+    return this.http
+      .post<BackendMenuItem>(
+        `${environment.api.baseUrl}/restaurant/menu`,
+        {
+          ...item,
+          category: item.category,
+        },
+        this.requestOptions(),
+      )
+      .pipe(map((createdItem) => this.mapMenuItem(createdItem)));
+  }
+
+  updateItem(id: string, item: Omit<MenuItem, 'id'>): Observable<MenuItem> {
+    return this.http
+      .put<BackendMenuItem>(
+        `${environment.api.baseUrl}/restaurant/menu/${id}`,
+        {
+          ...item,
+          category: item.category,
+        },
+        this.requestOptions(),
+      )
+      .pipe(map((updatedItem) => this.mapMenuItem(updatedItem)));
+  }
+
+  private requestOptions(): { headers: HttpHeaders } {
+    return {
+      headers: new HttpHeaders(this.authService.getAuthHeaders()),
     };
-    this.mockItems = [...this.mockItems, newItem];
-    return of(newItem);
+  }
+
+  private mapMenuItem(item: BackendMenuItem): MenuItem {
+    return {
+      id: item._id,
+      name: item.name,
+      description: item.description,
+      image: item.imageUrl?.trim() || undefined,
+      imageUrl: item.imageUrl?.trim() || '',
+      category: this.normalizeCategory(item.category),
+      price: item.price,
+      isAvailable: item.isAvailable,
+    };
+  }
+
+  private normalizeCategory(category: string): MenuItem['category'] {
+    const normalizedCategory = (category ?? '').trim().toUpperCase();
+
+    if (normalizedCategory === 'BEVERAGE' || normalizedCategory === 'COMBO') {
+      return normalizedCategory;
+    }
+
+    return 'SNACK';
   }
 }

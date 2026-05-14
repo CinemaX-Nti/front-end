@@ -76,6 +76,33 @@
         </div>
       </section>
 
+      <section class="panel panel--recent">
+        <div class="panel__header">
+          <div>
+            <h2>Recent Bookings</h2>
+            <p>Latest confirmed bookings in the system.</p>
+          </div>
+          <a routerLink="/admin/bookings">View all bookings</a>
+        </div>
+
+        <div *ngIf="recentBookings.length === 0" class="empty-state">
+          No recent bookings found.
+        </div>
+
+        <div *ngFor="let booking of recentBookings; trackBy: trackById" class="booking-card">
+          <div>
+            <h3>{{ booking.filmName }}</h3>
+            <p>{{ booking.customerName }} &middot; {{ booking.customerEmail }}</p>
+            <p>{{ booking.hallName }} &middot; {{ formatDate(booking.createdAt) }}</p>
+            <p>Seats: {{ booking.seats.join(', ') }}</p>
+          </div>
+
+          <div class="booking-card__side">
+            <strong>{{ formatMoney(booking.totalAmount) }}</strong>
+          </div>
+        </div>
+      </section>
+
     </div>
   </ng-container>
 </section>

@@ -6,6 +6,7 @@ import {
   AdminDashboardService,
   AdminMovie,
   CreateMoviePayload,
+  UpdateMoviePayload,
 } from '../../../services/admin-dashboard.service';
 
 @Component({
@@ -18,7 +19,7 @@ import {
 export class AdminMoviesManagementPage implements OnInit {
   private readonly adminService = inject(AdminDashboardService);
 
-  protected readonly languageOptions = ['English', 'Arabic'];
+  protected readonly languageOptions = ['english', 'arabic'];
   protected readonly movieGenreOptions = [
     'action', 'adventure', 'animation', 'biography', 'comedy', 'crime', 'documentary',
     'drama', 'family', 'fantasy', 'history', 'horror', 'music', 'mystery', 'romance',
@@ -30,13 +31,14 @@ export class AdminMoviesManagementPage implements OnInit {
   protected isSubmitting = false;
   protected feedbackMessage = '';
   protected feedbackTone: 'success' | 'error' = 'success';
+  protected editingMovieId: string | null = null;
 
   protected movieForm = {
     title: '',
     description: '',
     duration: 120,
     genreInput: 'action',
-    language: 'English',
+    language: 'english',
     releaseDate: '',
     trailerUrl: '',
     posterUrl: '',
@@ -82,6 +84,23 @@ export class AdminMoviesManagementPage implements OnInit {
     }
 
     this.isSubmitting = true;
+    if (this.editingMovieId) {
+      const updatePayload: UpdateMoviePayload = payload;
+      this.adminService.updateMovie(this.editingMovieId, updatePayload).subscribe({
+        next: (movie) => {
+          this.movies = this.movies.map((item) => item.id === movie.id ? movie : item);
+          this.resetForm();
+          this.isSubmitting = false;
+          this.showSuccess(`Movie "${movie.title}" was updated.`);
+        },
+        error: (error: unknown) => {
+          this.isSubmitting = false;
+          this.showError(this.extractErrorMessage(error, 'Movie update failed.'));
+        },
+      });
+      return;
+    }
+
     this.adminService.createMovie(payload).subscribe({
       next: (movie) => {
         this.movies = [movie, ...this.movies];
@@ -94,6 +113,28 @@ export class AdminMoviesManagementPage implements OnInit {
         this.showError(this.extractErrorMessage(error, 'Movie creation failed.'));
       },
     });
+  }
+
+  protected editMovie(movie: AdminMovie): void {
+    this.editingMovieId = movie.id;
+    this.movieForm = {
+      title: movie.title,
+      description: movie.description,
+      duration: movie.duration,
+      genreInput: movie.genres.join(', '),
+      language: movie.language.toLowerCase(),
+      releaseDate: this.normalizeDateInput(movie.releaseDate),
+      trailerUrl: movie.trailerUrl,
+      posterUrl: movie.posterUrl,
+      rating: movie.rating ?? 0,
+      status: movie.status,
+    };
+    this.feedbackMessage = '';
+  }
+
+  protected cancelEdit(): void {
+    this.resetForm();
+    this.feedbackMessage = '';
   }
 
   protected deleteMovie(movie: AdminMovie): void {
@@ -140,18 +181,32 @@ export class AdminMoviesManagementPage implements OnInit {
   }
 
   private resetForm(): void {
+    this.editingMovieId = null;
     this.movieForm = {
       title: '',
       description: '',
       duration: 120,
       genreInput: 'action',
-      language: 'English',
+      language: 'english',
       releaseDate: '',
       trailerUrl: '',
       posterUrl: '',
       rating: 8,
       status: 'now_showing',
     };
+  }
+
+  private normalizeDateInput(dateValue: string): string {
+    if (!dateValue) {
+      return '';
+    }
+
+    const parsedDate = new Date(dateValue);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '';
+    }
+
+    return parsedDate.toISOString().split('T')[0];
   }
 
   private showSuccess(message: string): void {

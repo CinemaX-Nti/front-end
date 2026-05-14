@@ -20,6 +20,8 @@ export class MenuManagementPage implements OnInit {
   selectedCategory: string = 'ALL';
   errorMessage: string = '';
   searchPlaceholder = 'Search by item name or description';
+  isEditing = false;
+  editingItemId: string | null = null;
 
   ngOnInit(): void {
     this.loadMenuItems();
@@ -93,23 +95,43 @@ export class MenuManagementPage implements OnInit {
     name: '',
     category: 'SNACK',
     description: '',
+    imageUrl: '',
     price: 0,
     isAvailable: true
   };
 
   openAddModal(): void {
     this.isAddModalOpen = true;
+    this.isEditing = false;
+    this.editingItemId = null;
     this.newItem = {
       name: '',
       category: 'SNACK',
       description: '',
+      imageUrl: '',
       price: 0,
       isAvailable: true
     };
   }
 
+  openEditModal(item: MenuItem): void {
+    this.isAddModalOpen = true;
+    this.isEditing = true;
+    this.editingItemId = item.id;
+    this.newItem = {
+      name: item.name,
+      category: item.category,
+      description: item.description,
+      imageUrl: item.imageUrl ?? item.image ?? '',
+      price: item.price,
+      isAvailable: item.isAvailable,
+    };
+  }
+
   closeAddModal(): void {
     this.isAddModalOpen = false;
+    this.isEditing = false;
+    this.editingItemId = null;
   }
 
   saveNewItem(): void {
@@ -119,7 +141,11 @@ export class MenuManagementPage implements OnInit {
     }
 
     this.errorMessage = '';
-    this.menuService.addItem(this.newItem).subscribe({
+    const request$ = this.isEditing && this.editingItemId
+      ? this.menuService.updateItem(this.editingItemId, this.newItem)
+      : this.menuService.addItem(this.newItem);
+
+    request$.subscribe({
       next: () => {
         this.closeAddModal();
         this.searchQuery = '';

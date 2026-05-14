@@ -11,8 +11,13 @@ import { UsersManagementPage } from './pages/admin/users-management/users-manage
 import { LandingPage } from './pages/landing-page/landing-page';
 import { MoviesManagement } from './pages/movies-management/movies-management';
 import { MovieDetails } from './pages/movie-details/movie-details';
+import { MovieShowtimesPage } from './pages/movie-showtimes/movie-showtimes';
 import { SeatsManagement } from './pages/seats-management/seats-management';
+import { SnacksPage } from './pages/snacks-page/snacks-page';
+import { CheckoutPage } from './pages/checkout-page/checkout-page';
+import { ProfilePage } from './pages/profile/profile';
 import { roleGuard } from './guards/role.guard';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -25,7 +30,11 @@ export const routes: Routes = [
 
   { path: 'movies', component: MoviesManagement },
   { path: 'movies/:id', component: MovieDetails },
-  {path:"movies/:id/:time", component: SeatsManagement},
+  { path: 'movies/:id/showtimes', component: MovieShowtimesPage },
+  { path: 'movies/:id/showtimes/:showtimeId/seats', component: SeatsManagement, canActivate: [authGuard] },
+  { path: 'movies/:id/showtimes/:showtimeId/snacks', component: SnacksPage, canActivate: [authGuard] },
+  { path: 'movies/:id/showtimes/:showtimeId/checkout', component: CheckoutPage, canActivate: [authGuard] },
+  { path: 'profile', component: ProfilePage, canActivate: [authGuard] },
   { path: 'admin', component: AdminDashboardPage, canActivate: [roleGuard('admin')] },
   { path: 'admin/movies', component: AdminMoviesManagementPage, canActivate: [roleGuard('admin')] },
   { path: 'admin/halls', component: AdminHallsManagementPage, canActivate: [roleGuard('admin')] },
@@ -39,9 +48,5 @@ export const routes: Routes = [
   { path: 'menu', redirectTo: 'admin/menu', pathMatch: 'full' },
   { path: 'bookings', redirectTo: 'admin/bookings', pathMatch: 'full' },
   { path: 'users', redirectTo: 'admin/users', pathMatch: 'full' },
-
-  // seat selection route can be added here when the feature is connected to navigation
-
   { path: '**', redirectTo: '' },
 ];
-

@@ -31,6 +31,10 @@ export interface User {
   email: string;
   role: string;
   provider: string;
+  confirmed?: boolean;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  createdAt?: string;
   photoUrl?: string;
 }
 
@@ -102,7 +106,15 @@ export class AuthService {
         // User is signed in
         console.log('Firebase user:', user);
       } else {
-        // User is signed out
+        // Keep locally authenticated users signed in even when Firebase has no session.
+        const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+
+        if (token && storedUser) {
+          this.currentUserSubject.next(JSON.parse(storedUser));
+          return;
+        }
+
         this.currentUserSubject.next(null);
       }
     });
@@ -201,7 +213,10 @@ export class AuthService {
 
       console.log('Login successful:', user);
 
-      this.router.navigate([user.role === 'admin' ? '/admin' : '/']);
+      const pendingRedirect = sessionStorage.getItem('authRedirectUrl');
+      sessionStorage.removeItem('authRedirectUrl');
+
+      this.router.navigate([pendingRedirect || (user.role === 'admin' ? '/admin' : '/')]);
     }
   }
 
@@ -216,10 +231,10 @@ export class AuthService {
       role: role,
       provider: 'local'
     };
-    
+
     localStorage.setItem('token', 'mock-token');
     localStorage.setItem('user', JSON.stringify(mockUser));
-    
+
     this.currentUserSubject.next(mockUser);
   }
 
@@ -227,7 +242,12 @@ export class AuthService {
    * Get current user value
    */
   get currentUserValue(): User | null {
-    return this.currentUserSubject.value;
+    if (this.currentUserSubject.value) {
+      return this.currentUserSubject.value;
+    }
+
+    const storedUser = localStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) as User : null;
   }
 
   /**
@@ -242,6 +262,14 @@ export class AuthService {
    */
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  /**
+   * Update current user data
+   */
+  updateCurrentUser(user: User): void {
+    localStorage.setItem('user', JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 
   /**

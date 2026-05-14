@@ -1,10 +1,28 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { shareReplay } from 'rxjs/operators';
 import { IMovie, IMovieDetails, IMovieShowTime } from '../models/movie.model';
 import { environment } from '../../environments/environment';
+
+interface BackendShowtime {
+  _id: string;
+  startTime: string;
+  endTime: string;
+  format?: '2D' | '3D' | 'IMAX';
+  status: 'scheduled' | 'running' | 'finished' | 'cancelled';
+  availableSeats?: number;
+  pricing?: {
+    standard: number;
+    premium: number;
+    vip: number;
+  };
+  hallId?: {
+    _id: string;
+    name: string;
+  };
+}
 
 @Injectable({
   providedIn: 'root',
@@ -30,10 +48,22 @@ export class MoviesService {
   }
 
   getMovieById(id: string): Observable<IMovieDetails> {
-    return this.getMovies().pipe(
-      map((movies) => {
+    return forkJoin({
+      movies: this.getMovies(),
+      showtimes: this.getShowtimesByMovieId(id),
+    }).pipe(
+      map(({ movies, showtimes }) => {
         const movie = movies.find((entry) => entry.id === id);
-        return this.enrichMovieDetails(movie ?? this.createFallbackMovie(id));
+        return this.enrichMovieDetails(movie ?? this.createFallbackMovie(id), showtimes);
+      }),
+    );
+  }
+
+  getShowtimesByMovieId(movieId: string): Observable<IMovieShowTime[]> {
+    return this.http.get<BackendShowtime[]>(`${environment.api.baseUrl}/showtimes?movieId=${movieId}`).pipe(
+      map((response) => {
+        const rawShowtimes = Array.isArray(response) ? response : [];
+        return rawShowtimes.map((showtime) => this.normalizeShowtime(showtime));
       }),
     );
   }
@@ -51,30 +81,51 @@ export class MoviesService {
     } as IMovie;
   }
 
-  private enrichMovieDetails(movie: IMovie): IMovieDetails {
+  private enrichMovieDetails(movie: IMovie, showtimes: IMovieShowTime[]): IMovieDetails {
     const titleSeed = movie.title || 'CinemaX Feature';
     const primaryGenre = movie.genres?.[0] ?? 'Sci-Fi';
     const description =
       movie.description ??
       `An epic ${primaryGenre.toLowerCase()} experience filled with atmosphere, momentum, and a night worth booking early.`;
-    const showtimes = this.buildShowtimes(movie);
+    const normalizedShowtimes = showtimes.length > 0 ? showtimes : this.buildFallbackShowtimes(movie);
+    const startingPrice = normalizedShowtimes.length > 0
+      ? Math.min(...normalizedShowtimes.map((showtime) => showtime.pricing?.standard ?? showtime.price))
+      : 0;
 
     return {
       ...movie,
       title: titleSeed,
       tagline: `${titleSeed} lights up the screen with a premium cinematic event.`,
       releaseDate: movie.releaseDate ?? 'May 1, 2026',
-      format: showtimes[0]?.format ?? '2D',
-      startingPrice: Math.min(...showtimes.map((showtime) => showtime.pricing?.standard ?? showtime.price)),
+      format: normalizedShowtimes[0]?.format ?? '2D',
+      startingPrice,
       description,
       synopsis: `${description} Discover a richly crafted story, immersive visuals, and performances designed for the big screen.`,
       director: 'CinemaX Studio',
       cast: 'Lead Cast Ensemble',
-      showtimes,
+      showtimes: normalizedShowtimes,
     };
   }
 
-  private buildShowtimes(movie: IMovie): IMovieShowTime[] {
+  private normalizeShowtime(showtime: BackendShowtime): IMovieShowTime {
+    const startTime = new Date(showtime.startTime);
+    const endTime = new Date(showtime.endTime);
+
+    return {
+      id: showtime._id,
+      date: showtime.startTime,
+      time: this.formatClockTime(startTime),
+      endTime: this.formatClockTime(endTime),
+      hall: showtime.hallId?.name ?? 'Main Hall',
+      seats: showtime.availableSeats ?? 0,
+      price: showtime.pricing?.standard ?? 0,
+      format: showtime.format ?? '2D',
+      tag: this.formatShowtimeStatus(showtime.status),
+      pricing: showtime.pricing,
+    };
+  }
+
+  private buildFallbackShowtimes(movie: IMovie): IMovieShowTime[] {
     const releaseBase = movie.releaseDate ?? '2026-05-15';
     const dates = ['2026-05-15', '2026-05-16', '2026-05-17'];
     const normalizedDates = dates.includes(releaseBase) ? dates : [releaseBase, '2026-05-16', '2026-05-17'];
@@ -119,5 +170,29 @@ export class MoviesService {
       language: 'English',
       trailerUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     };
+  }
+
+  private formatClockTime(value: Date): string {
+    return new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(value);
+  }
+
+  private formatShowtimeStatus(status: BackendShowtime['status']): string {
+    if (status === 'running') {
+      return 'Now Running';
+    }
+
+    if (status === 'finished') {
+      return 'Finished';
+    }
+
+    if (status === 'cancelled') {
+      return 'Cancelled';
+    }
+
+    return 'Scheduled';
   }
 }

@@ -208,6 +208,88 @@
   box-shadow: 0 16px 30px rgba(224, 183, 52, 0.18);
 }
 
+.confirm-button:disabled {
+  opacity: 0.72;
+}
+
+.confirm-button--secondary {
+  min-height: 3.5rem;
+  margin-top: 1rem;
+  background: transparent;
+  color: #e0b734;
+  border: 1px solid rgba(224, 183, 52, 0.26);
+  box-shadow: none;
+  font-size: 1rem;
+}
+
+.payment-field {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  color: #eef1f8;
+}
+
+.payment-field span {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.payment-field input {
+  min-height: 3rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(224, 183, 52, 0.2);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+
+.payment-field input::placeholder {
+  color: #9ea4b4;
+}
+
+.payment-feedback {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(60, 196, 122, 0.22);
+  border-radius: 0.95rem;
+  background: rgba(60, 196, 122, 0.08);
+  color: #dff7e8;
+}
+
+.payment-feedback--error {
+  border-color: rgba(220, 83, 83, 0.26);
+  background: rgba(220, 83, 83, 0.1);
+  color: #ffd8d8;
+}
+
+.payment-status-card {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(224, 183, 52, 0.16);
+}
+
+.payment-qr {
+  display: block;
+  width: min(220px, 100%);
+  margin: 1rem auto 0;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.payment-qr--wallet {
+  margin-top: 0.75rem;
+}
+
+.payment-instructions {
+  margin-top: 1rem;
+  color: #d3d9e8;
+}
+
+.payment-instructions p {
+  margin: 0.35rem 0;
+}
+
 .payment-note,
 .empty-text {
   margin: 0.9rem 0 0;
