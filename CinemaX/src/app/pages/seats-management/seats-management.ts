@@ -44,7 +44,7 @@ export class SeatsManagement implements OnInit {
     const movieId = this.route.snapshot.paramMap.get('id');
     const showtimeId = this.route.snapshot.paramMap.get('showtimeId');
 
-    if (!movieId || !showtimeId) {
+    if (!movieId || !showtimeId || !this.isMongoObjectId(showtimeId)) {
       this.router.navigate(['/movies']);
       return;
     }
@@ -62,6 +62,8 @@ export class SeatsManagement implements OnInit {
 
         this.movie = movie;
         this.showtime = showtime;
+
+        
         this.bookingFlow.ensureSession(movie, showtime);
         this.selectedSeatIds = new Set(this.bookingFlow.snapshot.seats.map((seat) => seat.id));
         this.seats = this.buildSeats(seats);
@@ -248,5 +250,9 @@ export class SeatsManagement implements OnInit {
 
   private priceForTier(tier: SeatTier): number {
     return this.showtime?.pricing?.[tier] ?? this.showtime?.price ?? 0;
+  }
+
+  private isMongoObjectId(value: string): boolean {
+    return /^[a-f\d]{24}$/i.test(value);
   }
 }

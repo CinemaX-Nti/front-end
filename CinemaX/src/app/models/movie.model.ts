@@ -1,4 +1,5 @@
 export type MovieStatus = 'now_showing' | 'coming_soon' | 'archived';
+export type MovieAgeRating = 'G' | 'PG' | 'PG-13' | '16+' | '18+';
 
 export const MOVIE_STATUS_LABELS: Record<MovieStatus, string> = {
   now_showing: 'Now Showing',
@@ -50,6 +51,7 @@ export interface IMovie {
   releaseDate?: string;
   language?: string;
   trailerUrl?: string;
+  ageRating?: MovieAgeRating;
 }
 
 export interface IMovieDetails extends IMovie {
@@ -111,6 +113,8 @@ export const MOVIE_GENRES: string[] = [
   'Supernatural',
 ];
 
+export const MOVIE_AGE_RATINGS: MovieAgeRating[] = ['G', 'PG', 'PG-13', '16+', '18+'];
+
 export const FALLBACK_MOVIE_DETAILS: IMovieDetails = {
   id: 'fallback',
   title: 'CinemaX Feature',
@@ -119,6 +123,7 @@ export const FALLBACK_MOVIE_DETAILS: IMovieDetails = {
   duration: 120,
   releaseDate: 'May 10, 2026',
   rating: 8.0,
+  ageRating: 'PG',
   genres: ['Drama', 'Adventure'],
   format: 'Standard',
   image: 'https://images.unsplash.com/photo-1497032205916-ac775f0649ae?auto=format&fit=crop&w=900&q=80',

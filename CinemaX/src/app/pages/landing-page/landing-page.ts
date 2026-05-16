@@ -61,6 +61,7 @@ export class LandingPage implements OnInit {
   protected isLoadingMovies = true;
   protected movieSections: LandingMovieSection[] = [];
   protected activeTrailerMovie: IMovie | null = null;
+  protected activeSectionSlides: Record<string, number> = {};
 
   ngOnInit(): void {
     this.moviesService.getMovies().subscribe({
@@ -74,10 +75,15 @@ export class LandingPage implements OnInit {
           language: movie.language ?? 'English',
           duration: typeof movie.duration === 'number' ? movie.duration : undefined,
           rating: typeof movie.rating === 'number' ? movie.rating : movie.rating ? Number(movie.rating) : 0,
+          ageRating: movie.ageRating ?? 'PG',
           status: movie.status,
         })) as IMovie[];
 
         this.movieSections = this.buildSections(movies);
+        this.activeSectionSlides = this.movieSections.reduce<Record<string, number>>((accumulator, section) => {
+          accumulator[section.key] = 0;
+          return accumulator;
+        }, {});
         this.isLoadingMovies = false;
       },
       error: () => {
@@ -99,6 +105,44 @@ export class LandingPage implements OnInit {
     this.activeTrailerMovie = null;
   }
 
+
+
+
+
+
+// pagination logic for each section
+
+
+  protected getActiveMovie(section: LandingMovieSection): IMovie | null {
+    if (section.movies.length === 0) {
+      return null;
+    }
+
+    const activeIndex = this.activeSectionSlides[section.key] ?? 0;
+    return section.movies[activeIndex] ?? section.movies[0];
+  }
+
+  protected setActiveMovie(sectionKey: string, index: number): void {
+    this.activeSectionSlides[sectionKey] = index;
+  }
+
+  protected previousSlide(section: LandingMovieSection): void {
+    const currentIndex = this.activeSectionSlides[section.key] ?? 0;
+    const nextIndex = currentIndex === 0 ? section.movies.length - 1 : currentIndex - 1;
+    this.activeSectionSlides[section.key] = nextIndex;
+  }
+
+  protected nextSlide(section: LandingMovieSection): void {
+    const currentIndex = this.activeSectionSlides[section.key] ?? 0;
+    this.activeSectionSlides[section.key] = (currentIndex + 1) % section.movies.length;
+  }
+
+
+
+  protected goToBooking(movie: IMovie): void {
+    this.router.navigate(['/movies', movie.id, 'showtimes']);
+  }
+
   protected getStatusTag(status: string): string {
     return MOVIE_STATUS_LABELS[status as keyof typeof MOVIE_STATUS_LABELS] ?? status;
   }
@@ -111,6 +155,7 @@ export class LandingPage implements OnInit {
     const hours = Math.floor(duration / 60);
     const minutes = duration % 60;
     return `${hours}h ${minutes}m`;
+
   }
 
   private buildSections(movies: IMovie[]): LandingMovieSection[] {
@@ -123,7 +168,7 @@ export class LandingPage implements OnInit {
     };
 
     return statusOrder
-      .map((status) => {
+    .map((status) => {
         const sectionMovies = movies.filter((movie) => movie.status === status);
         if (sectionMovies.length === 0) {
           return null;

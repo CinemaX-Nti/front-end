@@ -16,6 +16,9 @@ import { MovieTrailerModalComponent } from '../../components/movie-trailer-modal
 })
 export class MoviesManagement implements OnInit, AfterViewInit {
   private moviesService = inject(MoviesService);
+
+
+  // observable for route query params to determine if search input should be focused on load
   private route = inject(ActivatedRoute);
 
   @ViewChild('searchInput') private searchInput?: ElementRef<HTMLInputElement>;
@@ -86,7 +89,6 @@ export class MoviesManagement implements OnInit, AfterViewInit {
         // { success: true, data: IMovie[], pagination: {...} }
         const movies = Array.isArray(response) ? response : Array.isArray(response?.data) ? response.data : [];
 
-        console.log('Raw movies data from backend:', movies);
 
         // Normalize backend field names to match our UI/model
         this.movies = (movies ?? []).map((m: any) => ({
@@ -97,6 +99,7 @@ export class MoviesManagement implements OnInit, AfterViewInit {
           language: m.language ?? 'English',
           duration: typeof m.duration === 'number' ? m.duration : undefined,
           rating: typeof m.rating === 'number' ? m.rating : m.rating ? Number(m.rating) : 0,
+          ageRating: m.ageRating ?? 'PG',
           status: m.status,
         })) as IMovie[];
 
@@ -136,7 +139,7 @@ export class MoviesManagement implements OnInit, AfterViewInit {
       const movieGenres = (movie.genres ?? []).map((g) => g.toLowerCase());
       const matchesGenre = genre === 'All Genres' || movieGenres.includes(genre.toLowerCase());
       const matchesLanguage =
-        language === 'All Languages' || (movie.language ?? '').toLowerCase() === language.toLowerCase();
+        language === 'All Languages' || this.normalizeLanguage(movie.language) === this.normalizeLanguage(language);
 
       return matchesSearch && matchesStatus && matchesGenre && matchesLanguage;
     });
@@ -186,8 +189,16 @@ export class MoviesManagement implements OnInit, AfterViewInit {
 
   get languages(): string[] {
     return Array.from(
-      new Set(this.movies.map((movie) => movie.language?.trim()).filter((language): language is string => !!language)),
+      new Set(
+        this.movies
+          .map((movie) => this.normalizeLanguageLabel(movie.language))
+          .filter((language): language is string => !!language),
+      ),
     ).sort((a, b) => a.localeCompare(b));
+  }
+
+  formatLanguage(language?: string): string {
+    return this.normalizeLanguageLabel(language) ?? 'English';
   }
 
   getStatusLabel(status: string): string {
@@ -214,5 +225,27 @@ export class MoviesManagement implements OnInit, AfterViewInit {
       this.searchInput?.nativeElement.select();
       this.shouldFocusSearch = false;
     });
+  }
+
+  private normalizeLanguage(language?: string): string {
+    return (language ?? '').trim().toLowerCase();
+  }
+
+  private normalizeLanguageLabel(language?: string): string | null {
+    const normalized = this.normalizeLanguage(language);
+
+    if (!normalized) {
+      return null;
+    }
+
+    if (['english', 'en'].includes(normalized)) {
+      return 'English';
+    }
+
+    if (['arabic', 'ar', 'العربية', 'عربي', 'arabic language'].includes(normalized)) {
+      return 'Arabic';
+    }
+
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
   }
 }

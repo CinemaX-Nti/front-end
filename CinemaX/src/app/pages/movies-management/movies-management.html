@@ -85,10 +85,13 @@
 
         <div class="movie-card__badges">
           <span class="movie-card__status">{{ getStatusLabel(movie.status) }}</span>
-          <span class="movie-card__rating">
-            <i class="bi bi-star-fill"></i>
-            {{ movie.rating | number: '1.1-1' }}
-          </span>
+          <div class="movie-card__badge-stack">
+            <span class="movie-card__age-rating">{{ movie.ageRating || 'PG' }}</span>
+            <span class="movie-card__rating">
+              <i class="bi bi-star-fill"></i>
+              {{ movie.rating | number: '1.1-1' }}
+            </span>
+          </div>
         </div>
 
         <div class="movie-card__content">
@@ -99,7 +102,7 @@
             <i class="bi bi-clock"></i>
             {{ formatDuration(movie.duration) }}
           </p>
-          <p class="movie-card__language">{{ movie.language || 'English' }}</p>
+          <p class="movie-card__language">{{ formatLanguage(movie.language) }}</p>
           <div class="movie-card__actions">
             <button type="button" class="movie-card__link movie-card__link--button">Watch Trailer</button>
             <a [routerLink]="['/movies', movie.id]" class="movie-card__link" (click)="$event.stopPropagation()">View Details</a>

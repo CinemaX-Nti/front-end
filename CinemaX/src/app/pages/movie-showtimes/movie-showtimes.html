@@ -17,9 +17,16 @@
             <span>{{ movie.genres?.[0] || 'Feature Film' }}</span>
             <span>&bull;</span>
             <span>{{ movie.duration ? ((movie.duration / 60) | number: '1.0-0') + 'h ' + (movie.duration % 60) + 'm' : 'TBA' }}</span>
+            <span>&bull;</span>
+            <span>{{ movie.ageRating || 'PG' }}</span>
           </p>
         </div>
       </header>
+
+      <div *ngIf="ageGateMessage" class="age-gate-banner">
+        <i class="bi bi-shield-lock"></i>
+        <span>{{ ageGateMessage }}</span>
+      </div>
 
       <section class="date-section">
         <h2>Select Date</h2>
@@ -69,7 +76,14 @@
               <span>VIP <strong>${{ showtime.pricing?.vip }}</strong></span>
             </div>
 
-            <button type="button" class="showtime-action" (click)="goToSeats(showtime)">Select Seats</button>
+            <button
+              type="button"
+              class="showtime-action"
+              [disabled]="!isBookableShowtime(showtime)"
+              (click)="goToSeats(showtime)"
+            >
+              {{ isBookableShowtime(showtime) ? 'Select Seats' : 'Unavailable' }}
+            </button>
           </article>
         </div>
       </section>

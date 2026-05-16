@@ -34,6 +34,10 @@
               <i class="bi bi-calendar-event"></i>
               {{ movie.releaseDate }}
             </span>
+            <span class="meta-pill meta-pill--age">
+              <i class="bi bi-person-badge"></i>
+              {{ movie.ageRating || 'PG' }}
+            </span>
           </div>
 
           <div class="genre-row">

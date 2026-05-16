@@ -16,6 +16,7 @@ export class BookingsManagementPage implements OnInit {
 
   bookings: Booking[] = [];
   filteredBookings: Booking[] = [];
+  selectedBooking: Booking | null = null;
   
   searchQuery: string = '';
   statusFilter: string = 'ALL';
@@ -53,6 +54,7 @@ export class BookingsManagementPage implements OnInit {
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase();
       filtered = filtered.filter((booking) => 
+        this.getBookingNumber(booking).toString().includes(query) ||
         booking.id.toLowerCase().includes(query) || 
         booking.customerName.toLowerCase().includes(query) ||
         booking.movieName.toLowerCase().includes(query)
@@ -60,6 +62,11 @@ export class BookingsManagementPage implements OnInit {
     }
 
     this.filteredBookings = filtered;
+  }
+
+  getBookingNumber(booking: Booking): number {
+    const bookingIndex = this.bookings.findIndex((item) => item.id === booking.id);
+    return bookingIndex >= 0 ? bookingIndex + 1 : 0;
   }
 
   approvePayment(booking: Booking): void {
@@ -88,7 +95,11 @@ export class BookingsManagementPage implements OnInit {
     return 'View Only';
   }
 
-  explainUnavailableActions(): void {
-    this.errorMessage = 'The backend currently supports payment approval only for bookings waiting for admin approval.';
+  openBookingDetails(booking: Booking): void {
+    this.selectedBooking = booking;
+  }
+
+  closeBookingDetails(): void {
+    this.selectedBooking = null;
   }
 }

@@ -35,6 +35,11 @@ export class Navbar {
     this.isMenuOpen = false;
   }
 
+  protected openSearch(): void {
+    this.closeMenu();
+    this.router.navigate(['/movies']);
+  }
+
   protected logout(): void {
     this.closeMenu();
     this.authService.logout();

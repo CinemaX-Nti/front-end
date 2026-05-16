@@ -31,6 +31,7 @@ interface BackendMovie {
   trailerUrl?: string;
   posterUrl: string;
   rating?: number;
+  ageRating?: 'G' | 'PG' | 'PG-13' | '16+' | '18+';
   status: 'now_showing' | 'coming_soon' | 'archived';
   createdAt: string;
 }
@@ -128,6 +129,7 @@ export interface AdminMovie {
   posterUrl: string;
   trailerUrl: string;
   rating: number | null;
+  ageRating: 'G' | 'PG' | 'PG-13' | '16+' | '18+';
   status: 'now_showing' | 'coming_soon' | 'archived';
   createdAt: string;
 }
@@ -217,6 +219,7 @@ export interface CreateMoviePayload {
   trailerUrl?: string;
   posterUrl: string;
   rating?: number;
+  ageRating?: 'G' | 'PG' | 'PG-13' | '16+' | '18+';
   status: 'now_showing' | 'coming_soon' | 'archived';
 }
 
@@ -396,6 +399,7 @@ export class AdminDashboardService {
       posterUrl: movie.posterUrl,
       trailerUrl: movie.trailerUrl ?? '',
       rating: movie.rating ?? null,
+      ageRating: movie.ageRating ?? 'PG',
       status: movie.status,
       createdAt: movie.createdAt,
     };
