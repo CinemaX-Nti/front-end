@@ -1,7 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserService, AdminUser } from '../../../services/user.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AdminDashboardService, AdminUserRecord } from '../../../services/admin-dashboard.service';
 
 @Component({
   selector: 'app-users-management',
@@ -11,10 +12,10 @@ import { UserService, AdminUser } from '../../../services/user.service';
   styleUrl: './users-management.css',
 })
 export class UsersManagementPage implements OnInit {
-  private userService = inject(UserService);
+  private readonly adminService = inject(AdminDashboardService);
   
-  users: AdminUser[] = [];
-  filteredUsers: AdminUser[] = [];
+  users: AdminUserRecord[] = [];
+  filteredUsers: AdminUserRecord[] = [];
   searchQuery: string = '';
   errorMessage: string = '';
 
@@ -24,12 +25,12 @@ export class UsersManagementPage implements OnInit {
 
   loadUsers(): void {
     this.errorMessage = '';
-    this.userService.getUsers().subscribe({
+    this.adminService.getUsers().subscribe({
       next: (data) => {
         this.users = data;
         this.filteredUsers = data;
       },
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         this.errorMessage = error?.error?.message || 'Failed to load users from the backend.';
       }
     });
@@ -45,7 +46,7 @@ export class UsersManagementPage implements OnInit {
     this.filteredUsers = this.users.filter((user) => 
       user.name.toLowerCase().includes(query) || 
       user.email.toLowerCase().includes(query) ||
-      user.phone.toLowerCase().includes(query)
+      user.phoneNumber.toLowerCase().includes(query)
     );
   }
 

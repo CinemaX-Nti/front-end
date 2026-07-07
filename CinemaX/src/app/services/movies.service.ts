@@ -77,6 +77,7 @@ export class MoviesService {
       language: movie.language ?? 'English',
       duration: typeof movie.duration === 'number' ? movie.duration : undefined,
       rating: typeof movie.rating === 'number' ? movie.rating : movie.rating ? Number(movie.rating) : 0,
+      ageRating: movie.ageRating ?? 'PG',
       status: movie.status ?? 'now_showing',
     } as IMovie;
   }
@@ -163,6 +164,7 @@ export class MoviesService {
         'An epic journey through the cosmos as a crew of astronauts discover ancient alien technology that holds the key to humanity’s survival.',
       duration: 150,
       rating: 8.5,
+      ageRating: 'PG',
       status: 'now_showing',
       genres: ['Sci-Fi', 'Adventure', 'Drama'],
       image: 'images/movies-1.png',

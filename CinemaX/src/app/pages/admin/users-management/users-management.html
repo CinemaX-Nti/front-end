@@ -45,23 +45,23 @@
             </div>
           </td>
           <td class="text-secondary">{{ user.email }}</td>
-          <td class="text-secondary">{{ user.phone }}</td>
+          <td class="text-secondary">{{ user.phoneNumber }}</td>
           <td>
-            <span class="status-pill" [ngClass]="user.role === 'ADMIN' ? 'pill-danger' : 'pill-info'">
-              {{ user.role }}
+            <span class="status-pill" [ngClass]="user.role === 'admin' ? 'pill-danger' : 'pill-info'">
+              {{ user.role === 'admin' ? 'ADMIN' : 'CUSTOMER' }}
             </span>
           </td>
           <td>
             <span class="status-pill pill-secondary">
-              {{ user.provider }}
+              {{ user.provider === 'google' ? 'Google' : 'Local' }}
             </span>
           </td>
           <td>
-            <span class="status-pill" [ngClass]="user.emailStatus === 'VERIFIED' ? 'pill-success' : 'pill-warning'">
-              {{ user.emailStatus }}
+            <span class="status-pill" [ngClass]="user.confirmed ? 'pill-success' : 'pill-warning'">
+              {{ user.confirmed ? 'VERIFIED' : 'UNVERIFIED' }}
             </span>
           </td>
-          <td class="text-secondary">{{ user.joinedDate | date:'mediumDate' }}</td>
+          <td class="text-secondary">{{ user.createdAt | date:'mediumDate' }}</td>
           <td>
             <div class="action-buttons">
               <button class="btn-action" title="Backend action not available yet" (click)="explainUnavailableActions()">

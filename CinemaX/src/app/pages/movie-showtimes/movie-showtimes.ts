@@ -5,6 +5,7 @@ import { AppLoadingComponent } from '../../components/app-loading/app-loading';
 import { BookingFlowService } from '../../services/booking-flow.service';
 import { IMovieDetails, IMovieShowTime } from '../../models/movie.model';
 import { MoviesService } from '../../services/movies.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-movie-showtimes',
@@ -18,10 +19,12 @@ export class MovieShowtimesPage implements OnInit {
   private readonly router = inject(Router);
   private readonly moviesService = inject(MoviesService);
   private readonly bookingFlow = inject(BookingFlowService);
+  private readonly authService = inject(AuthService);
 
   isLoading = true;
   movie: IMovieDetails | null = null;
   selectedDate = 'all';
+  ageGateMessage = '';
 
   ngOnInit(): void {
     const movieId = this.route.snapshot.paramMap.get('id');
@@ -59,12 +62,24 @@ export class MovieShowtimesPage implements OnInit {
   }
 
   goToSeats(showtime: IMovieShowTime): void {
-    if (!this.movie || !showtime.id) {
+    if (!this.movie || !showtime.id || !this.isBookableShowtime(showtime)) {
       return;
     }
 
+    const ageGateMessage = this.getAgeGateMessage(this.movie.ageRating);
+    if (ageGateMessage) {
+      this.ageGateMessage = ageGateMessage;
+      return;
+    }
+
+    this.ageGateMessage = '';
+
     this.bookingFlow.startSession(this.movie, showtime);
     this.router.navigate(['/movies', this.movie.id, 'showtimes', showtime.id, 'seats']);
+  }
+
+  isBookableShowtime(showtime: IMovieShowTime): boolean {
+    return this.isMongoObjectId(showtime.id);
   }
 
   formatMetaDate(date?: string): string {
@@ -78,5 +93,67 @@ export class MovieShowtimesPage implements OnInit {
       day: 'numeric',
       year: 'numeric',
     }).format(new Date(date));
+  }
+
+  private getAgeGateMessage(ageRating?: string): string {
+    const minimumAge = this.getMinimumRequiredAge(ageRating);
+
+    if (minimumAge === 0) {
+      return '';
+    }
+
+    const currentUser = this.authService.currentUserValue;
+    const userAge = this.calculateAge(currentUser?.dateOfBirth);
+
+    if (!currentUser?.dateOfBirth) {
+      return `This movie is rated ${ageRating}. Add your date of birth in your profile before booking.`;
+    }
+
+    if (userAge === null || userAge < minimumAge) {
+      return `This movie is rated ${ageRating}. You must be at least ${minimumAge} years old to continue with booking.`;
+    }
+
+    return '';
+  }
+
+  private getMinimumRequiredAge(ageRating?: string): number {
+    if (ageRating === '18+') {
+      return 18;
+    }
+
+    if (ageRating === '16+') {
+      return 16;
+    }
+
+    if (ageRating === 'PG-13') {
+      return 13;
+    }
+
+    return 0;
+  }
+
+  private calculateAge(dateOfBirth?: string): number | null {
+    if (!dateOfBirth) {
+      return null;
+    }
+
+    const dob = new Date(dateOfBirth);
+    if (Number.isNaN(dob.getTime())) {
+      return null;
+    }
+
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age -= 1;
+    }
+
+    return age;
+  }
+
+  private isMongoObjectId(value?: string): boolean {
+    return typeof value === 'string' && /^[a-f\d]{24}$/i.test(value);
   }
 }

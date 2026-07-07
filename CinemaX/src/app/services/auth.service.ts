@@ -10,9 +10,9 @@ import {
   getAuth,
   signInWithPopup,
   GoogleAuthProvider,
+  UserCredential,
   onAuthStateChanged,
-  signOut,
-  User as FirebaseUser
+  signOut
 } from 'firebase/auth';
 
 // Environment config - Replace with your Firebase config
@@ -135,8 +135,7 @@ export class AuthService {
 
     return from(signInWithPopup(this.auth, this.googleProvider)).pipe(
       switchMap((result) => {
-        const user = result.user;
-        return this.handleGoogleLogin(user);
+        return this.handleGoogleLogin(result);
       }),
       tap((response) => {
         this.handleAuthSuccess(response);
@@ -185,16 +184,17 @@ export class AuthService {
   /**
    * Send Google user data to backend
    */
-  private handleGoogleLogin(firebaseUser: FirebaseUser): Observable<AuthResponse> {
-    // Get the ID token from Firebase
-    return from(firebaseUser.getIdToken()).pipe(
-      switchMap((idToken) => {
-        // Send the token to your backend
-        return this.http.post<AuthResponse>(`${this.apiUrl}/google`, {
-          idToken
-        });
-      })
-    );
+  private handleGoogleLogin(result: UserCredential): Observable<AuthResponse> {
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const idToken = credential?.idToken;
+
+    if (!idToken) {
+      throw new Error('Google sign-in did not return a valid ID token.');
+    }
+
+    return this.http.post<AuthResponse>(`${this.apiUrl}/google`, {
+      idToken
+    });
   }
 
   /**

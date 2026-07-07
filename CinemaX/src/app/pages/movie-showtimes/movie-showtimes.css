@@ -49,6 +49,23 @@
   margin-top: 2rem;
 }
 
+.age-gate-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid rgba(229, 9, 20, 0.35);
+  border-radius: 1rem;
+  background: rgba(229, 9, 20, 0.12);
+  color: #ffe7cf;
+}
+
+.age-gate-banner i {
+  color: #efc340;
+  font-size: 1.1rem;
+}
+
 .date-section h2 {
   margin-bottom: 1rem;
   font-size: 2rem;

@@ -8,6 +8,7 @@ import {
   CreateMoviePayload,
   UpdateMoviePayload,
 } from '../../../services/admin-dashboard.service';
+import { MOVIE_AGE_RATINGS, MovieAgeRating } from '../../../models/movie.model';
 
 @Component({
   selector: 'app-admin-movies-management',
@@ -20,6 +21,7 @@ export class AdminMoviesManagementPage implements OnInit {
   private readonly adminService = inject(AdminDashboardService);
 
   protected readonly languageOptions = ['english', 'arabic'];
+  protected readonly ageRatingOptions = MOVIE_AGE_RATINGS;
   protected readonly movieGenreOptions = [
     'action', 'adventure', 'animation', 'biography', 'comedy', 'crime', 'documentary',
     'drama', 'family', 'fantasy', 'history', 'horror', 'music', 'mystery', 'romance',
@@ -43,6 +45,7 @@ export class AdminMoviesManagementPage implements OnInit {
     trailerUrl: '',
     posterUrl: '',
     rating: 8,
+    ageRating: 'PG' as MovieAgeRating,
     status: 'now_showing' as 'now_showing' | 'coming_soon' | 'archived',
   };
 
@@ -70,11 +73,12 @@ export class AdminMoviesManagementPage implements OnInit {
       description: this.movieForm.description.trim(),
       duration: Number(this.movieForm.duration),
       genre: this.movieForm.genreInput.split(',').map((genre) => genre.trim().toLowerCase()).filter(Boolean),
-      language: this.movieForm.language.trim() || undefined,
+      language: this.normalizeLanguage(this.movieForm.language) || undefined,
       releaseDate: this.movieForm.releaseDate || undefined,
       trailerUrl: this.movieForm.trailerUrl.trim() || undefined,
       posterUrl: this.movieForm.posterUrl.trim(),
       rating: Number(this.movieForm.rating),
+      ageRating: this.movieForm.ageRating,
       status: this.movieForm.status,
     };
 
@@ -122,11 +126,12 @@ export class AdminMoviesManagementPage implements OnInit {
       description: movie.description,
       duration: movie.duration,
       genreInput: movie.genres.join(', '),
-      language: movie.language.toLowerCase(),
+      language: this.normalizeLanguage(movie.language),
       releaseDate: this.normalizeDateInput(movie.releaseDate),
       trailerUrl: movie.trailerUrl,
       posterUrl: movie.posterUrl,
       rating: movie.rating ?? 0,
+      ageRating: movie.ageRating,
       status: movie.status,
     };
     this.feedbackMessage = '';
@@ -192,6 +197,7 @@ export class AdminMoviesManagementPage implements OnInit {
       trailerUrl: '',
       posterUrl: '',
       rating: 8,
+      ageRating: 'PG',
       status: 'now_showing',
     };
   }
@@ -207,6 +213,20 @@ export class AdminMoviesManagementPage implements OnInit {
     }
 
     return parsedDate.toISOString().split('T')[0];
+  }
+
+  private normalizeLanguage(language?: string): string {
+    const normalized = (language ?? '').trim().toLowerCase();
+
+    if (['english', 'en'].includes(normalized)) {
+      return 'english';
+    }
+
+    if (['arabic', 'ar', 'العربية', 'عربي', 'arab'].includes(normalized)) {
+      return 'arabic';
+    }
+
+    return 'english';
   }
 
   private showSuccess(message: string): void {

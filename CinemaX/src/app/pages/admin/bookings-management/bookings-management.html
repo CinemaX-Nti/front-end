@@ -2,7 +2,6 @@
   <div class="dashboard-header">
     <div class="header-titles">
       <h1 class="page-title">Bookings Management</h1>
-      <p class="page-subtitle">View real bookings from the database and approve pending payments</p>
     </div>
   </div>
 
@@ -16,7 +15,7 @@
       <input 
         type="text" 
         class="search-input" 
-        placeholder="Search by ID, customer or movie..." 
+        placeholder="Search by booking no., customer or movie..." 
         [(ngModel)]="searchQuery"
         (input)="applyFilters()"
       >
@@ -46,7 +45,7 @@
     <table class="admin-table">
       <thead>
         <tr>
-          <th>Booking ID</th>
+          <th>Booking Number</th>
           <th>Customer</th>
           <th>Movie & Hall</th>
           <th>Showtime</th>
@@ -58,7 +57,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let booking of filteredBookings">
-          <td><span class="booking-id">{{ booking.id }}</span></td>
+          <td><span class="booking-id">{{ getBookingNumber(booking) }}</span></td>
           <td>
             <div class="customer-name">{{ booking.customerName }}</div>
             <div class="booking-date text-secondary">{{ booking.createdAt | date:'shortDate' }}</div>
@@ -95,7 +94,7 @@
               <button *ngIf="booking.canApprovePayment" class="action-select" (click)="approvePayment(booking)">
                 {{ actionLabel(booking) }}
               </button>
-              <button *ngIf="!booking.canApprovePayment" class="action-select" (click)="explainUnavailableActions()">
+              <button *ngIf="!booking.canApprovePayment" class="action-select" (click)="openBookingDetails(booking)">
                 View Only
               </button>
             </div>
@@ -109,5 +108,67 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div *ngIf="selectedBooking" class="booking-modal-overlay" (click)="closeBookingDetails()">
+    <div class="booking-modal" (click)="$event.stopPropagation()">
+      <div class="booking-modal__header">
+        <h2>Booking Details</h2>
+        <button type="button" class="booking-modal__close" (click)="closeBookingDetails()" aria-label="Close booking details">×</button>
+      </div>
+
+      <div class="booking-modal__grid">
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Booking Number</span>
+          <strong>{{ getBookingNumber(selectedBooking) }}</strong>
+        </div>
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Customer</span>
+          <strong>{{ selectedBooking.customerName }}</strong>
+        </div>
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Movie</span>
+          <strong>{{ selectedBooking.movieName }}</strong>
+        </div>
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Hall</span>
+          <strong>{{ selectedBooking.hallName }}</strong>
+        </div>
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Showtime</span>
+          <strong>{{ selectedBooking.showtime | date:'medium' }}</strong>
+        </div>
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Created At</span>
+          <strong>{{ selectedBooking.createdAt | date:'mediumDate' }}</strong>
+        </div>
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Booking Status</span>
+          <strong>{{ selectedBooking.bookingStatus }}</strong>
+        </div>
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Payment Status</span>
+          <strong>{{ selectedBooking.paymentStatus }}</strong>
+        </div>
+        <div class="booking-modal__item booking-modal__item--full">
+          <span class="booking-modal__label">Seats</span>
+          <div class="seat-pills">
+            <span class="seat-pill" *ngFor="let seat of selectedBooking.seats">{{ seat }}</span>
+          </div>
+        </div>
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Tickets Total</span>
+          <strong>${{ selectedBooking.totalTickets | number:'1.2-2' }}</strong>
+        </div>
+        <div class="booking-modal__item">
+          <span class="booking-modal__label">Food Total</span>
+          <strong>${{ selectedBooking.totalFood | number:'1.2-2' }}</strong>
+        </div>
+        <div class="booking-modal__item booking-modal__item--full">
+          <span class="booking-modal__label">Grand Total</span>
+          <strong class="booking-modal__grand-total">${{ (selectedBooking.totalTickets + selectedBooking.totalFood) | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

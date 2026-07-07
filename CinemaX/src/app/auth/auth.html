@@ -131,7 +131,7 @@
           </form>
 
           <!-- Register Form -->
-          <form *ngIf="!isLoginView && !isForgotPasswordView" [formGroup]="registerForm"
+          <form *ngIf="!isLoginView && !isForgotPasswordView && !isConfirmEmailView" [formGroup]="registerForm"
             (ngSubmit)="onSubmit()" class="auth-form">
             <div class="row">
               <div class="col-md-6">

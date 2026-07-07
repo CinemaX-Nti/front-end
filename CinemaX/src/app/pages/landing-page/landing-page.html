@@ -65,25 +65,80 @@
           <a routerLink="/movies" class="section-link">View All</a>
         </div>
 
-        <div class="row g-4">
-          <div class="col-12 col-sm-6 col-lg-3" *ngFor="let movie of section.movies">
-            <article class="movie-card h-100" role="button" tabindex="0" (click)="openTrailer(movie)" (keydown.enter)="openTrailer(movie)">
-              <div class="movie-poster">
-                <img [src]="movie.image || 'images/movies-1.png'" [alt]="movie.title + ' poster'" />
+        <div class="home-slider" *ngIf="getActiveMovie(section) as activeMovie">
+          <article class="home-spotlight">
+            <div class="home-spotlight__poster">
+              <img [src]="activeMovie.image || 'images/movies-1.png'" [alt]="activeMovie.title + ' poster'" />
+              <div class="home-spotlight__overlay"></div>
+              <div class="home-spotlight__chips">
+                <span class="movie-age-rating">{{ activeMovie.ageRating || 'PG' }}</span>
                 <div class="movie-rating">
                   <i class="bi bi-star-fill"></i>
-                  <span>{{ movie.rating | number: '1.1-1' }}</span>
+                  <span>{{ activeMovie.rating | number: '1.1-1' }}</span>
                 </div>
-                <span class="movie-status">{{ getStatusTag(movie.status) }}</span>
+              </div>
+            </div>
+
+            <div class="home-spotlight__content">
+              <span class="movie-status">{{ getStatusTag(activeMovie.status) }}</span>
+              <h3>{{ activeMovie.title }}</h3>
+              <p class="home-spotlight__meta">
+                {{ activeMovie.genres?.join(' • ') || 'Feature Film' }}
+              </p>
+              <p class="home-spotlight__meta">
+                {{ formatDuration(activeMovie.duration) }} • {{ activeMovie.language || 'English' }}
+              </p>
+              <p class="home-spotlight__copy">
+                {{ activeMovie.description || 'Step into a premium big-screen experience with immersive visuals, rich sound, and a booking flow built for movie night.' }}
+              </p>
+
+              <div class="home-spotlight__actions">
+                <button type="button" class="home-cta home-cta--primary" (click)="goToBooking(activeMovie)">
+                  <i class="bi bi-ticket-perforated"></i>
+                  <span>Book Now</span>
+                </button>
+                <button type="button" class="home-cta home-cta--ghost" (click)="openTrailer(activeMovie)">
+                  <i class="bi bi-play-circle"></i>
+                  <span>Watch Trailer</span>
+                </button>
               </div>
 
-              <div class="movie-card-body">
-                <h3>{{ movie.title }}</h3>
-                <p>{{ movie.genres?.[0] || 'Feature Film' }} <span>&bull;</span> {{ formatDuration(movie.duration) }}</p>
-                <button type="button" class="movie-card-link">Watch Trailer</button>
+              <div class="home-spotlight__controls">
+                <button type="button" class="slider-control" (click)="previousSlide(section)" aria-label="Previous movie">
+                  <i class="bi bi-arrow-left"></i>
+                </button>
+                <div class="slider-dots">
+                  <button
+                    *ngFor="let movie of section.movies; let index = index"
+                    type="button"
+                    class="slider-dot"
+                    [class.slider-dot--active]="movie.id === activeMovie.id"
+                    (click)="setActiveMovie(section.key, index)"
+                    [attr.aria-label]="'Show ' + movie.title"
+                  ></button>
+                </div>
+                <button type="button" class="slider-control" (click)="nextSlide(section)" aria-label="Next movie">
+                  <i class="bi bi-arrow-right"></i>
+                </button>
               </div>
-            </article>
-          </div>
+            </div>
+          </article>
+
+          <aside class="home-slider__rail">
+            <button
+              *ngFor="let movie of section.movies; let index = index"
+              type="button"
+              class="rail-card"
+              [class.rail-card--active]="movie.id === activeMovie.id"
+              (click)="setActiveMovie(section.key, index)"
+            >
+              <img [src]="movie.image || 'images/movies-1.png'" [alt]="movie.title + ' thumbnail'" />
+              <div class="rail-card__copy">
+                <strong>{{ movie.title }}</strong>
+                <span>{{ movie.genres?.[0] || 'Feature Film' }} • {{ movie.ageRating || 'PG' }}</span>
+              </div>
+            </button>
+          </aside>
         </div>
       </div>
     </div>
